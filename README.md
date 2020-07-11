@@ -41,9 +41,15 @@ A Route is defined by 3 elements:
 
 The Route can be added to the Router using the function `void router_add_route(char *matcher, request_handler handler, request_filter filter)`;
 
-# Configuration
+## Serve static content
 
-By default, WAYUU looks for it's configuration in under `/etc/wayuu`, but you can modify it by passing the root folder with the `-r` CLI option.
+WAYUU will serve static content from `WAYUU_ROOT/www`, where `WAYUU_ROOT` is the root folder for WAYUU. Default folder for static files: `/etc/wayuu/www`.
+
+## IP Filtering
+
+WAYUU can be configured to serve only requests from certain IP addresses. The folder `WAYUU_ROOT/etc` can contain an `allow` file and a `deny` file. The `allow` file contains a list of IP addresses that will be whitelisted. The `deny` file contains a list of IP addressed that will be blacklisted. The format of these files is a very simple list of IP addresses, one per line.   
+
+# SSL Configuration
 
 The SSL certificates must be placed under the `ssl` folder. By default: `/etc/wayuu/ssl`. WAYUU looks for a `cert.pem` and a `key.pem` file.
 
