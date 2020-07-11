@@ -1,0 +1,11 @@
+.vscode/
+.DS_Store
+*.a
+*.out
+*.log
+
+wayuu
+test-wayuu
+*.o
+
+.vagrant/
