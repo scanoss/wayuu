@@ -307,7 +307,10 @@ void return_json_with_status(api_request *req, int status, char *data)
 	sprintf(buf, "Content-Length: %zu\r\n\r\n", strlen(data) + 2);
 	http_print_str(req, buf);
 
-	SSL_write(req->ssl, data, strlen(data));
+	if (WAYUU_SSL_ON)
+		SSL_write(req->ssl, data, strlen(data));
+	else
+		send(req->socket, data, strlen(data), 0);
 	len += strlen(buf) + strlen(data) + 2;
 	// Empty line
 	strcpy(buf, "\r\n");
