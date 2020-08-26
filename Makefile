@@ -24,7 +24,7 @@ $(TARGET): $(OBJECTS)
 	rm -f *.o **/*.o 
 
 lib: $(TESTABLE_OBJECTS)
-	rm libwayuu.a
+	rm -f libwayuu.a
 	$(CC) $(CCFLAGS) -o $@ -c $<
 	ar -cvq libwayuu.a *.o
 

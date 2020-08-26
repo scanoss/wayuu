@@ -140,7 +140,7 @@ void configure_context(SSL_CTX *ctx)
 	sprintf(cert_loc, "%s/ssl/cert.pem", WAYUU_WS_ROOT);
 	sprintf(key_loc, "%s/ssl/key.pem", WAYUU_WS_ROOT);
 	/* Set the key and cert */
-	if (SSL_CTX_use_certificate_file(ctx, cert_loc, SSL_FILETYPE_PEM) <= 0)
+	if (SSL_CTX_use_certificate_chain_file(ctx, cert_loc) <= 0)
 	{
 		log_error("Failed to use certificate in %s", cert_loc);
 		wayuu_failed();
