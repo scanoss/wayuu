@@ -51,6 +51,7 @@
 #define CONTENT_TYPE_SVG "Content-Type: image/svg+xml\r\n"
 #define CONTENT_TYPE_ICON "Content-Type: image/vnd.microsoft.icon\r\n"
 #define CONTENT_TYPE_TEXT_PLAIN "Content-Type: text/plain\r\n"
+#define CONTENT_TYPE_TEXT_CSV "Content-Type: text/csv\r\n"
 #define CONTENT_TYPE_YAML "Content-Type: text/yaml\r\n"
 #define CONTENT_TYPE_OCTET_STREAM "Content-Type: application/octet-stream\r\n"
 
@@ -170,5 +171,7 @@ void http_log_headers(api_request *req);
  * http_get_header: Returns the value of the header with given name. Or NULL if the header is not found in the request.
  */
 char *http_get_header(api_request *req, char *name);
+
+char *get_content_type(char *filename);
 
 #endif

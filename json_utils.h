@@ -64,6 +64,8 @@ char *json_key_value(char *key, char *value);
  */
 char *json_key_value_int(char *key, int value);
 
+char *json_key_value_bool(char *key, bool value);
+
 /**
  * json_key_value: Returns a json fragment for a key value for an uint32_t, e.g.: "key":value
  */

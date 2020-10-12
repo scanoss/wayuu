@@ -96,6 +96,13 @@ char *json_key_value_int(char *key, int value)
   return json;
 }
 
+char *json_key_value_bool(char *key, bool value)
+{
+  char *json = calloc(1, strlen(key) + MAX_INT_STR + 15);
+  sprintf(json, "\"%s\":%s", key, value ? "true": "false");
+  return json;
+}
+
 char *json_key_value_uint32_t(char *key, uint32_t value)
 {
   char *json = calloc(1, strlen(key) + MAX_INT_STR + 15);

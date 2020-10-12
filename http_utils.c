@@ -15,6 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE 1
+#endif
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -88,32 +92,7 @@ int return_headers(api_request *req, char *filename)
 	len += strlen(buf);
 	http_print(req, buf, len);
 
-	/* Calculate/send content type */
-	char *ext = strrchr(filename, '.');
-	if (!ext || ext == filename)
-		sprintf(buf, "Content-Type: text/html\r\n");
-	else if (strcmp(ext, ".html") == 0 || strcmp(ext, ".js") == 0)
-		sprintf(buf, "Content-Type: text/html\r\n");
-	else if (strcmp(ext, ".png") == 0)
-		sprintf(buf, "Content-Type: image/png\r\n");
-	else if (strcmp(ext, ".jpg") == 0 || strcmp(ext, ".jpeg") == 0)
-		sprintf(buf, "Content-Type: image/jpeg\r\n");
-	else if (strcmp(ext, ".zip") == 0)
-		sprintf(buf, "Content-Type: application/zip\r\n");
-	else if (strcmp(ext, ".css") == 0)
-		sprintf(buf, "Content-Type: text/css\r\n");
-	else if (strcmp(ext, ".svg") == 0)
-		sprintf(buf, "Content-Type: image/svg+xml\r\n");
-	else if (strcmp(ext, ".ico") == 0)
-		sprintf(buf, "Content-Type: image/vnd.microsoft.icon\r\n");
-	else if (strcmp(ext, ".txt") == 0)
-		sprintf(buf, "Content-Type: text/plain\r\n");
-	else if (strcmp(ext, ".yaml") == 0)
-	{
-		sprintf(buf, "Content-Type: text/yaml\r\n");
-	}
-	else
-		sprintf(buf, "Content-Type: application/octet-stream\r\n");
+	strcat(buf, get_content_type(filename));
 	len += strlen(buf);
 	http_print(req, buf, strlen(buf));
 
@@ -151,6 +130,8 @@ char *get_content_type(char *filename)
 		sprintf(buf, CONTENT_TYPE_ICON);
 	else if (strcmp(ext, ".txt") == 0)
 		sprintf(buf, CONTENT_TYPE_TEXT_PLAIN);
+	else if (strcmp(ext, ".csv"))
+		sprintf(buf, CONTENT_TYPE_TEXT_CSV);
 	else if (strcmp(ext, ".yaml") == 0)
 	{
 		sprintf(buf, CONTENT_TYPE_YAML);
@@ -202,6 +183,7 @@ int direct_file(api_request *req, char *filename)
 {
 	if (!is_file(filename))
 	{
+		log_warn("File not found: %s", filename);
 		return -1;
 	}
 	int length = return_headers(req, filename);
@@ -307,10 +289,7 @@ void return_json_with_status(api_request *req, int status, char *data)
 	sprintf(buf, "Content-Length: %zu\r\n\r\n", strlen(data) + 2);
 	http_print_str(req, buf);
 
-	if (WAYUU_SSL_ON)
-		SSL_write(req->ssl, data, strlen(data));
-	else
-		send(req->socket, data, strlen(data), 0);
+	http_print_str(req, data);
 	len += strlen(buf) + strlen(data) + 2;
 	// Empty line
 	strcpy(buf, "\r\n");
