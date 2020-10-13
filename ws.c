@@ -46,10 +46,11 @@ char WAYUU_STATIC_ROOT[2 * ROOT_PATH_MAX];
 
 char WAYUU_WS_ALLOW[ROOT_PATH_MAX + 32];
 char WAYUU_WS_DENY[ROOT_PATH_MAX + 32];
+char WAYUU_WS_LIMITS[ROOT_PATH_MAX + 32];
 
 const char *COOKIE_HEADERS[] = {"X-Session:", "Authorization:", ""};
 
-// LIST OF ALLOWED HTTP METHODS. Last element must be NULL so that startswithany can work. 
+// LIST OF ALLOWED HTTP METHODS. Last element must be NULL so that startswithany can work.
 const char *ALLOWED_HTTP_METHODS[] = {"GET", "POST", "DELETE", NULL};
 
 void wayuu_failed()
@@ -343,6 +344,97 @@ api_request *api_request_new(int socket)
 	return req;
 }
 
+/* Return "total" / "by_ip" ongoing connections "path" and "IP" */
+void get_live_stats(char *path, char *IP, int *total, int *by_ip)
+{
+	for (int i = 0; i < WS_MAX_CONNECTIONS; i++)
+	{
+		if (live_connections[i].socket)
+		{
+			if (startswith(live_connections[i].path, path))
+			{
+				(*total)++;
+				if (!strcmp(IP, live_connections[i].IP))
+					(*by_ip)++;
+			}
+		}
+	}
+}
+
+/* Validates if socket/IP/path is to be allowed */
+bool connection_validate(char *IP, char *path)
+{
+	for (int i = 0; i < MAX_LIMIT_RULES; i++)
+	{
+		if (!*limits[i].path)
+			break;
+		if (startswith(path, limits[i].path))
+		{
+			int total = 0;
+			int by_ip = 0;
+			get_live_stats(limits[i].path, IP, &total, &by_ip);
+			if (total > limits[i].max_connections)
+			{
+				log_debug("IP:%s denied, max_connections exceeded for %s", IP, limits[i].path);
+				return false;
+			}
+			if (by_ip > limits[i].max_connections_per_ip)
+			{
+				log_debug("IP:%s denied, max_connections_per_ip exceeded for %s", IP, limits[i].path);
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+void connection_close(api_request *req)
+{
+	if (WAYUU_SSL_ON)
+	{
+		SSL_shutdown(req->ssl);
+		SSL_free(req->ssl);
+	}
+	close(req->socket);
+	connection_del(req->socket);
+}
+
+/* Removes socket from live_connections */
+void connection_del(int socket)
+{
+	for (int i = 0; i < WS_MAX_CONNECTIONS; i++)
+	{
+		if (live_connections[i].socket == socket)
+		{
+			live_connections[i].socket = 0;
+			*live_connections[i].path = 0;
+			*live_connections[i].IP = 0;
+			break;
+		}
+	}
+}
+
+/* Adds socket to live_connections (if allowed) */
+bool connection_add(int socket, char *IP, char *path)
+{
+	if (!connection_validate(IP, path))
+		return false;
+
+	for (int i = 0; i < WS_MAX_CONNECTIONS; i++)
+	{
+		if (!live_connections[i].socket)
+		{
+			live_connections[i].socket = socket;
+			strcpy(live_connections[i].path, path);
+			strcpy(live_connections[i].IP, IP);
+			return true;
+		}
+	}
+
+	log_debug("WS_MAX_CONNECTIONS reached");
+	return false;
+}
+
 /**
  * accept_request: Main request handling routine. It performs initial parsing of structures,
  * generates api_request structure
@@ -405,6 +497,7 @@ void accept_request(int socket)
 	{
 		bad_request(req);
 		connection_close(req);
+		free(req);
 		return;
 	}
 
@@ -424,6 +517,16 @@ void accept_request(int socket)
 	url[i] = '\0';
 
 	req->url = strdup(url);
+
+	/* Validate and add connection to live_connections */
+	if (!connection_add(req->socket, req->IP, req->url))
+	{
+		too_many_connections(req);
+		connection_close(req);
+		free(req);
+		return;
+	}
+
 	/* Parse remaining part of the HTTP header section */
 	long content_length = -1;
 	char multipart_boundary[100] = "\0";
@@ -682,4 +785,78 @@ void ws_launch(int port, char *bind_addr)
 		SSL_CTX_free(ctx);
 	}
 	cleanup_openssl();
+}
+
+/* 
+
+	load_limits: Loads the limits configuration file.
+  
+	The limits configuration file contains a list of comma delimited limits with:
+	path, max connections, max connections per IP, max execution seconds
+
+  Example:
+  /api, 20, 2, 10
+
+  Access to /api will be limited to a maximum of 20 simultaneous connections
+  and no more than 2 from the same IP. Connections will be dropped if alive
+  for more than 10 seconds
+*/
+path_limits *load_limits()
+{
+	sprintf(WAYUU_WS_LIMITS, "%s/etc/limits", WAYUU_WS_ROOT);
+	path_limits *out = calloc(sizeof(path_limits), MAX_LIMIT_RULES);
+
+	FILE *fp;
+	char *line = NULL;
+	size_t len = 0;
+	ssize_t read;
+	int path_rules = 0;
+
+	/* Open etc/limits file */
+	fp = fopen(WAYUU_WS_LIMITS, "r");
+	if (fp != NULL)
+	{
+		/* Read file line by line */
+		while ((read = getline(&line, &len, fp)) != -1)
+		{
+			/* Only lines starting with / are considered */
+			if (*line == '/')
+			{
+				/* Tokenize line, comma delimited */
+				char *token;
+				token = strtok(line, ",");
+				strcpy(out[path_rules].path, token);
+				int i = 1;
+				while (token != NULL)
+				{
+					token = strtok(NULL, ",");
+					if (!token)
+						break;
+					if (i == 1)
+						out[path_rules].max_connections = atoi(token);
+					if (i == 2)
+						out[path_rules].max_connections_per_ip = atoi(token);
+					if (i == 3)
+						out[path_rules].max_seconds = atoi(token);
+					if (++i >= 4)
+						break;
+				}
+
+				/* If all fields are present, increment path_rules, otherwise clean record */
+				if (i >= 3)
+					path_rules++;
+				else
+					*out[path_rules].path = 0;
+
+				/* Stop here if MAX_LIMIT_RULES is reached */
+				if (path_rules >= MAX_LIMIT_RULES)
+					break;
+			}
+		}
+		fclose(fp);
+	}
+
+	if (line)
+		free(line);
+	return out;
 }

@@ -33,7 +33,7 @@
 // WS Worker Thread pool size
 #define WS_THREAD_POOL_SIZE 20
 // Maximum amount of connections held in the WS queue
-#define WS_MAX_CONNECTIONS 100
+#define WS_MAX_CONNECTIONS 1024
 
 #define DEFAULT_PORT 4443
 // This is the default folder for configuration.
@@ -43,6 +43,7 @@
 // By default Wayuu will bind to 127.0.0.1.
 #define DEFAULT_BIND_ADDRESS "127.0.0.1"
 #define ROOT_PATH_MAX 256
+#define MAX_LIMIT_RULES 64
 
 extern char WAYUU_WS_ROOT[ROOT_PATH_MAX];
 extern char WAYUU_STATIC_ROOT[2 * ROOT_PATH_MAX];
@@ -65,7 +66,7 @@ extern const char *ALLOWED_HTTP_METHODS[];
 
 #define MAX_SESSION 64
 
-    typedef struct ws_queue
+typedef struct ws_queue
 {
   int capacity;
   int size;
@@ -73,6 +74,9 @@ extern const char *ALLOWED_HTTP_METHODS[];
   int rear;
   int *elements;
 } ws_queue;
+  
+connections *live_connections;
+path_limits *limits;
 
 // WS HOOKS
 
@@ -104,5 +108,8 @@ void save_tmp_file(char *tmpfields, char *field, long start_file, char *tmpdata,
 void wayuu_failed();
 
 bool allowed_address(char *ip);
+path_limits *load_limits();
 
+void connection_del(int socket);
+void connection_close(api_request *req);
 #endif

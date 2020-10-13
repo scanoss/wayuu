@@ -53,6 +53,21 @@ WAYUU can be configured to serve only requests from certain IP addresses. The fo
 
 The SSL certificates must be placed under the `ssl` folder. By default: `/etc/wayuu/ssl`. WAYUU looks for a `cert.pem` and a `key.pem` file.
 
+# Resource Limits
+
+WAYUU can manage the resource limits applied to URLs. This is done in the `WAYUU_ROOT/etc/limits` file. 
+
+The limits configuration file contains a list of comma delimited tuples: path, maximum connections, max connections per IP, max execution seconds
+
+Example:
+
+  ```
+  /api, 20, 2, 10
+  ```
+
+In this example, access to every path beginning with /api will be limited to a maximum of 20 simultaneous connections and no more than 2 from the same IP. Connections will be dropped if alive
+for more than 10 seconds
+
 # Building
 
 WAYUU uses standard Linux GNU extensions as well as OpenSSL and libcrypto. You can use build WAYUU easily with GCC and Make. 

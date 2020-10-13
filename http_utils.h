@@ -38,6 +38,7 @@
 #define HTTP_FORBIDDEN_START HTTP_VERSION " 403 Forbidden\r\n"
 #define HTTP_UNAUTHORIZED_START HTTP_VERSION " 401 UNAUTHORIZED\r\n"
 #define HTTP_NOT_FOUND_START HTTP_VERSION " 404 NOT FOUND\r\n"
+#define HTTP_TOO_MANY_CONNECTIONS " 429 Too many connections\r\n"
 #define HTTP_CONTENT_LENGTH_ZERO "Content-Length: 0\r\n"
 
 #define HTTP_INTERNAL_ERROR_START HTTP_VERSION " 500 Internal Server Error\r\n"
@@ -61,6 +62,9 @@
 #define HTTP_MAX_HEADER_NAME 64
 #define HTTP_MAX_HEADER_VALUE 256
 #define HTTP_MAX_HEADERS 20 // Maximum number of HTTP Headers handled by WAYUU
+
+#define HTTP_MAX_PATH 512 // Max path length in URI
+#define HTTP_MAX_IP 16 // Max length of an IP address
 
 /**
  * WAYUU_SSL_ON is a global that defines whether WAYUU is in SSL mode (HTTPS) or plain HTTP.
@@ -110,6 +114,26 @@ typedef struct api_request
   uint32_t response_length; // Length in bytes of the response
 } api_request;
 
+
+/* Stores data on ongoing activity */
+typedef struct connections
+{
+    int socket;
+    long unix_time;
+    char path[HTTP_MAX_PATH];
+    char IP[HTTP_MAX_IP];
+} connections;
+
+
+/* Stores API limits by path */
+typedef struct path_limits
+{
+    char path[HTTP_MAX_PATH];
+	char max_connections;
+	char max_connections_per_ip;
+	char max_seconds;
+} path_limits;
+
 /**
  * http_read_char: Reads a char from the socket, supports SSL mode and plain HTTP.
  */
@@ -136,6 +160,7 @@ void send_empty_line(api_request *req);
 void not_found(api_request *req);
 void not_authenticated(api_request *req);
 void bad_request(api_request *req);
+void too_many_connections(api_request *req);
 void bad_request_with_error(api_request *req, error_t *error);
 void forbidden(api_request *req);
 void forbidden_with_error(api_request *req, error_t *error);
@@ -145,7 +170,7 @@ void created_with_json(api_request *req, char *data);
 void internal_server_error(api_request *req);
 
 void send_http_status(api_request *req, int status, char *message);
-void connection_close(api_request *req);
+
 
 // URL Parsing helpers
 typedef struct path_and_query_t
@@ -171,6 +196,7 @@ void http_log_headers(api_request *req);
  * http_get_header: Returns the value of the header with given name. Or NULL if the header is not found in the request.
  */
 char *http_get_header(api_request *req, char *name);
+
 
 char *get_content_type(char *filename);
 

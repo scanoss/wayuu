@@ -33,9 +33,6 @@
 #include "json_utils.h"
 #include "http_utils.h"
 
-// Number of HTTP errors handled. Size of HTTP ERROR arrays.
-#define HTTP_ERROR_N 7
-
 /**
  * WAYUU_SSL_ON is a global that defines whether WAYUU is in SSL mode (HTTPS) or plain HTTP.
  * By default SSL mode is enabled
@@ -59,16 +56,19 @@ int http_read_char(api_request *req, char *c)
 	return n;
 }
 
-const char *HTTP_ERROR_STARTS[HTTP_ERROR_N] = {
+const char *HTTP_ERROR_STARTS[] = {
 		HTTP_OK_START,
 		HTTP_CREATED_START,
 		HTTP_BAD_REQUEST_START,
 		HTTP_UNAUTHORIZED_START,
 		HTTP_FORBIDDEN_START,
 		HTTP_NOT_FOUND_START,
+		HTTP_TOO_MANY_CONNECTIONS,
 		HTTP_INTERNAL_ERROR_START};
 
-const int HTTP_ERROR_STATUS[HTTP_ERROR_N] = {200, 201, 400, 401, 403, 404, 500};
+const int HTTP_ERROR_STATUS[] = {200, 201, 400, 401, 403, 404, 429, 500};
+
+int HTTP_ERROR_N = sizeof(HTTP_ERROR_STATUS)/sizeof(HTTP_ERROR_STATUS[0]);
 
 int _find_http_status_index(int status)
 {
@@ -169,15 +169,7 @@ int return_file(api_request *req, char *path)
 	return length;
 }
 
-void connection_close(api_request *req)
-{
-	if (WAYUU_SSL_ON)
-	{
-		SSL_shutdown(req->ssl);
-		SSL_free(req->ssl);
-	}
-	close(req->socket);
-}
+
 
 int direct_file(api_request *req, char *filename)
 {
@@ -301,6 +293,11 @@ void return_json_with_status(api_request *req, int status, char *data)
 void not_found(api_request *req)
 {
 	send_http_status(req, 404, "");
+}
+
+void too_many_connections(api_request *req)
+{
+	send_http_status(req, 429, "");
 }
 
 void not_authenticated(api_request *req)
@@ -469,3 +466,4 @@ char *http_get_header(api_request *req, char *name)
 	}
 	return "";
 }
+

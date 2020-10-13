@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 #ifdef WAYUU_DIST
 #include <signal.h>
 #include <string.h>
@@ -50,6 +51,10 @@ int main(int argc, char *argv[])
   strcpy(FAVICON_URL, DEFAULT_FAVICON_URL);
   char bind_addr[24];
   strcpy(bind_addr, DEFAULT_BIND_ADDRESS);
+
+  /* Load path limits */
+  live_connections = calloc(sizeof(connections), WS_MAX_CONNECTIONS);
+  limits = load_limits();
 
   signal(SIGPIPE, SIG_IGN);
   // Parse CLI Arguments using getopt
@@ -102,6 +107,7 @@ int main(int argc, char *argv[])
   log_set_file(WAYUU_LOGFILE);
   ws_launch(ws_port, bind_addr);
   log_close_file();
+  free(live_connections);
   exit(EXIT_SUCCESS);
 }
 

@@ -24,6 +24,7 @@
 #ifndef __WAYUU_JSON_UTILS_H
 #define __WAYUU_JSON_UTILS_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 /**
