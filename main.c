@@ -52,10 +52,6 @@ int main(int argc, char *argv[])
   char bind_addr[24];
   strcpy(bind_addr, DEFAULT_BIND_ADDRESS);
 
-  /* Load path limits */
-  live_connections = calloc(sizeof(connections), WS_MAX_CONNECTIONS);
-  limits = load_limits();
-
   signal(SIGPIPE, SIG_IGN);
   // Parse CLI Arguments using getopt
 

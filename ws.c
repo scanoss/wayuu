@@ -701,6 +701,9 @@ void ws_launch(int port, char *bind_addr)
 		ctx = create_context();
 		configure_context(ctx);
 	}
+	/* Load path limits */
+	live_connections = calloc(sizeof(connections), WS_MAX_CONNECTIONS);
+	limits = load_limits();
 	/* Start service */
 	ws_threads_queue = ws_create_queue(WS_MAX_CONNECTIONS);
 	pthread_mutex_init(&ws_mutex, NULL);
