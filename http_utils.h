@@ -30,7 +30,7 @@
 // HTTP protocol start strings
 #define CRLF "\r\n"
 #define HTTP_VERSION "HTTP/1.1"
-#define WAYUU_WS_VERSION "1.1"
+#define WAYUU_WS_VERSION "1.2"
 #define WAYUU_HTTP_SERVER_STRING "Server: WAYUU/" WAYUU_WS_VERSION CRLF
 #define HTTP_OK_START HTTP_VERSION " 200 OK\r\n"
 #define HTTP_CREATED_START HTTP_VERSION " 201 CREATED\r\n"
