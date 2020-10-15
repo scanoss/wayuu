@@ -91,8 +91,9 @@ int return_headers(api_request *req, char *filename)
 	sprintf(buf, "%s%s", HTTP_OK_START, WAYUU_HTTP_SERVER_STRING);
 	len += strlen(buf);
 	http_print(req, buf, len);
-
-	strcat(buf, get_content_type(filename));
+	char *content_type = get_content_type(filename);
+	strcat(buf, content_type);
+	free(content_type);
 	len += strlen(buf);
 	http_print(req, buf, strlen(buf));
 
@@ -105,7 +106,6 @@ int return_headers(api_request *req, char *filename)
 	strcpy(buf, "\r\n");
 	http_print(req, buf, strlen(buf));
 	len += strlen(buf);
-	free(buf);
 	return len;
 }
 
