@@ -105,6 +105,7 @@ int return_headers(api_request *req, char *filename)
 	strcpy(buf, "\r\n");
 	http_print(req, buf, strlen(buf));
 	len += strlen(buf);
+	free(buf);
 	return len;
 }
 
