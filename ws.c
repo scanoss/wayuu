@@ -846,8 +846,10 @@ path_limits *load_limits()
 				}
 
 				/* If all fields are present, increment path_rules, otherwise clean record */
-				if (i >= 3)
+				if (i >= 3) {
+					log_debug("Read limits configuration: (path: %s, max_connections: %d, max_connections_per_ip: %d, max_seconds: %d)", out[path_rules].path, out[path_rules].max_connections, out[path_rules].max_connections_per_ip, out[path_rules].max_seconds);
 					path_rules++;
+				}
 				else
 					*out[path_rules].path = 0;
 
