@@ -28,17 +28,19 @@
 #include <stdbool.h>
 
 // HTTP protocol start strings
+
 #define CRLF "\r\n"
 #define HTTP_VERSION "HTTP/1.1"
 #define WAYUU_WS_VERSION "1.2"
 #define WAYUU_HTTP_SERVER_STRING "Server: WAYUU/" WAYUU_WS_VERSION CRLF
+// HTTP STATUS STRINGS. 
 #define HTTP_OK_START HTTP_VERSION " 200 OK\r\n"
 #define HTTP_CREATED_START HTTP_VERSION " 201 CREATED\r\n"
 #define HTTP_BAD_REQUEST_START HTTP_VERSION " 400 Bad Request\r\n"
 #define HTTP_FORBIDDEN_START HTTP_VERSION " 403 Forbidden\r\n"
 #define HTTP_UNAUTHORIZED_START HTTP_VERSION " 401 UNAUTHORIZED\r\n"
 #define HTTP_NOT_FOUND_START HTTP_VERSION " 404 NOT FOUND\r\n"
-#define HTTP_TOO_MANY_CONNECTIONS " 429 Too many connections\r\n"
+#define HTTP_TOO_MANY_CONNECTIONS HTTP_VERSION " 429 Too many connections\r\n"
 #define HTTP_CONTENT_LENGTH_ZERO "Content-Length: 0\r\n"
 
 #define HTTP_INTERNAL_ERROR_START HTTP_VERSION " 500 Internal Server Error\r\n"
