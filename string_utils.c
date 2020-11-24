@@ -272,3 +272,16 @@ long text_find_after(char *haystack, char *needle, long start, long bytes)
 
   return -1;
 }
+
+bool string_isalnum(char *data)
+{
+
+  if (data[0] == 0)
+    return false;
+
+  for (int i = 0; i < strlen(data); i++)
+    if (!isalnum(data[i]))
+      return false;
+
+  return true;
+}

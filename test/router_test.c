@@ -105,5 +105,48 @@ describe(router)
       free(data_sent);
       free(req);
     }
+
+    it("should handle API URLs with parameters") {
+      init_mock_socket_buffer();
+      router_init();
+      router_add_route("DELETE:/user/{username}", mock_request_handler, false_filter);
+      api_request *req = malloc(sizeof(api_request));
+      req->username = "test-user-154";
+      req->IP = "127.0.0.1";
+      req->method = "DELETE";
+      req->path = "/user/123456";
+      req->n_headers = 0;
+      req->form = "";
+      router_handle_request(req);
+      char *data_sent = get_sent_data();
+      asserteq(req->form, "username=123456");
+      char expected[1024];
+      sprintf(expected, "%s%s%s%s", HTTP_BAD_REQUEST_START, WAYUU_HTTP_SERVER_STRING, HTTP_CONTENT_LENGTH_ZERO, CRLF);
+      asserteq(data_sent, expected);
+      free_routing_table();
+      free(data_sent);
+      free(req->form);
+      free(req);
+    }
+  }
+
+  subdesc(router_get_parameter_name) {
+    it("should get parameter name") {
+      route_matcher *matcher = malloc(sizeof(route_matcher));
+      router_resolve_route("/users/{id}", matcher);
+      asserteq(matcher->param, "id");
+      asserteq(matcher->prefix, "/users/");
+      free(matcher);
+    }
+  }
+  subdesc(router_extract_param) {
+    it("should extract param and return query string") {
+      route_matcher *matcher = malloc(sizeof(route_matcher));
+      router_resolve_route("/users/{id}", matcher);
+      char *qs = router_extract_param("/users/123456", matcher);
+      asserteq(qs, "id=123456");
+      free(matcher);
+      free(qs);
+    }
   }
 }

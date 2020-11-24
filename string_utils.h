@@ -80,4 +80,9 @@ void chop_string(char *input);
  * text_find_after: Returns position in haystack right after end of needle, or -1 if not found 
  */
 long text_find_after(char *haystack, char *needle, long start, long bytes);
+
+/**
+ * string_isalnum: Returns true if the whole string is a valid alphanumeric string.
+ */
+bool string_isalnum(char *data);
 #endif

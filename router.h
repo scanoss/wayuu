@@ -30,7 +30,16 @@
 /**
  * MAX_ROUTES: The maximum amount of route definitions in the routing table. 
  */
-#define MAX_ROUTES 50
+#define MAX_ROUTES 128
+
+#define MAX_ROUTE_PATH 256
+#define MAX_PARAM_LENGTH 64
+
+typedef struct route_matcher {
+  int type;
+  char prefix[MAX_ROUTE_PATH];
+  char param[MAX_PARAM_LENGTH];
+} route_matcher;
 
 /**
  * request_handler: function that handles the request.
@@ -69,5 +78,9 @@ void router_add_route(char *matcher, request_handler handler, request_filter fil
 void reject_routing_request(api_request *req);
 
 void free_routing_table();
+
+void router_resolve_route(const char *template, route_matcher *matcher);
+
+char *router_extract_param(const char *path, route_matcher *matcher);
 
 #endif
