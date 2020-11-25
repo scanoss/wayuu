@@ -51,7 +51,7 @@ char WAYUU_WS_LIMITS[ROOT_PATH_MAX + 32];
 const char *COOKIE_HEADERS[] = {"X-Session:", "Authorization:", ""};
 
 // LIST OF ALLOWED HTTP METHODS. Last element must be NULL so that startswithany can work.
-const char *ALLOWED_HTTP_METHODS[] = {"GET", "POST", "DELETE", NULL};
+const char *ALLOWED_HTTP_METHODS[] = {"GET", "POST", "PUT", "DELETE", NULL};
 
 void wayuu_failed()
 {
