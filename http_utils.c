@@ -143,6 +143,34 @@ char *get_content_type(char *filename)
 	return buf;
 }
 
+char *get_content_type_for_mime(char *mime)
+{
+	char *buf = malloc(1024);
+	
+	if (strcmp(mime, "text/html") == 0)
+		sprintf(buf, CONTENT_TYPE_TEXT_HTML);
+	else if (strcmp(mime, "image/png") == 0)
+		sprintf(buf, CONTENT_TYPE_IMAGE_PNG);
+	else if (strcmp(mime, "image/jpeg") == 0)
+		sprintf(buf, CONTENT_TYPE_IMAGE_JPEG);
+	else if (strcmp(mime, "application/zip") == 0)
+		sprintf(buf, CONTENT_TYPE_ZIP);
+	else if (strcmp(mime, "text/css") == 0)
+		sprintf(buf, CONTENT_TYPE_CSS);
+	else if (strcmp(mime, "text/plain") == 0)
+		sprintf(buf, CONTENT_TYPE_TEXT_PLAIN);
+	else if (strcmp(mime, "text/csv"))
+		sprintf(buf, CONTENT_TYPE_TEXT_CSV);
+	else if (strcmp(mime, "text/yaml") == 0)
+	{
+		sprintf(buf, CONTENT_TYPE_YAML);
+	}
+	else
+		sprintf(buf, CONTENT_TYPE_OCTET_STREAM);
+
+	return buf;
+}
+
 int return_file(api_request *req, char *path)
 {
 
@@ -259,6 +287,20 @@ int return_json_headers(api_request *req, int status)
 	char buf[1024];
 
 	sprintf(buf, "%s%s%s", HTTP_ERROR_STARTS[error_index], WAYUU_HTTP_SERVER_STRING, CONTENT_TYPE_JSON);
+	http_print(req, buf, strlen(buf));
+	return strlen(buf);
+}
+
+int return_headers_with_mime(api_request *req, int status, char *mime)
+{
+	int error_index = _find_http_status_index(status);
+	if (error_index == -1)
+	{
+		return 0;
+	}
+	char buf[1024];
+
+	sprintf(buf, "%s%s%s", HTTP_ERROR_STARTS[error_index], WAYUU_HTTP_SERVER_STRING, get_content_type_for_mime(mime));
 	http_print(req, buf, strlen(buf));
 	return strlen(buf);
 }

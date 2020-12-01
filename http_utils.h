@@ -145,6 +145,7 @@ int http_read_char(api_request *req, char *c);
 char *error_t_json_serializer(error_t *error);
 
 int return_headers(api_request *req, char *filename);
+int return_headers_with_mime(api_request *req, int status, char *mime_type);
 /**
  * return_json_headers: Returns the HTTP headers for a JSON response
  */
