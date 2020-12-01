@@ -501,6 +501,7 @@ void accept_request(int socket)
 		return;
 	}
 
+// Parse URL
 	i = 0;
 	while (isspace((int)(buf[j])) && (j < sizeof(buf)))
 	{
