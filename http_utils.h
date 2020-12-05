@@ -171,9 +171,9 @@ void ok(api_request *req);
 void created(api_request *req);
 void created_with_json(api_request *req, char *data);
 void internal_server_error(api_request *req);
+void internal_server_error_with_error(api_request *req, error_t *error);
 
 void send_http_status(api_request *req, int status, char *message);
-
 
 // URL Parsing helpers
 typedef struct path_and_query_t

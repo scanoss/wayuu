@@ -392,6 +392,12 @@ void internal_server_error(api_request *req)
 	send_http_status(req, 500, "");
 }
 
+void internal_server_error_with_error(api_request *req, error_t *error) {
+	char *error_json = error_t_json_serializer(error);
+	return_json_with_status(req, 500, error_json);
+	free(error_json);
+}
+
 void send_http_status(api_request *req, int status, char *message)
 {
 	// Find status in statuses
