@@ -273,6 +273,19 @@ void return_json(api_request *req, char *data)
 	return_json_with_status(req, 200, data);
 }
 
+void return_json_list(api_request *req, json_list_t list)
+{
+	log_debug("Returning list with elements: %d", list.size);
+	char *json = json_array_of_entities(list);
+	return_json(req, json);
+	for (int i = 0; i < list.size; i++)
+	{
+		free(list.elements[i]);
+	}
+	free(list.elements);
+	free(json);
+}
+
 /**
  * return_json_headers: Returns the HTTP headers for a JSON response
  */

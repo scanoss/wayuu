@@ -26,6 +26,7 @@
 
 #include <openssl/ssl.h>
 #include <stdbool.h>
+#include "json_utils.h"
 
 // HTTP protocol start strings
 
@@ -151,6 +152,10 @@ int return_headers_with_mime(api_request *req, int status, char *mime_type);
  */
 int return_json_headers(api_request *req, int status);
 void return_json(api_request *req, char *data);
+/**
+ * return_json_list: Returns JSON content from the given JSON list. It also frees the list. 
+ */
+void return_json_list(api_request *req, json_list_t list);
 void return_json_with_status(api_request *req, int status, char *data);
 void return_json_stream(api_request *req, int status, FILE *fp);
 void http_print(api_request *req, void *data, int length);

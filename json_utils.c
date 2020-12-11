@@ -85,7 +85,7 @@ char *json_array_of_entities(json_list_t list)
 char *json_key_value(char *key, char *value)
 {
   char *json = calloc(1, strlen(key) + strlen(value) + 15);
-  sprintf(json, "\"%s\":\"%s\"", key, value);
+  sprintf(json, "\"%s\":\"%s\"", key, value? value : "");
   return json;
 }
 
