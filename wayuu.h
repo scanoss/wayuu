@@ -31,4 +31,5 @@
 #include "router.h"
 #include "string_utils.h"
 #include "wayuu_log.h"
+#include "ws.h"
 #endif
