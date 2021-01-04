@@ -17,6 +17,8 @@ OBJECTS=$(SOURCES:.c=.o)
 TESTABLE_OBJECTS=$(filter-out main.o,$(SOURCES:.c=.o))
 TARGET=wayuu
 
+slib: CCFLAGS:=$(CCFLAGS) -fpic
+
 all: clean $(TARGET)
 
 $(TARGET): $(OBJECTS)
@@ -27,6 +29,10 @@ lib: $(TESTABLE_OBJECTS)
 	rm -f libwayuu.a
 	$(CC) $(CCFLAGS) -o $@ -c $<
 	ar -cvq libwayuu.a *.o
+	
+slib: $(TESTABLE_OBJECTS)
+	$(CC) -g -o libwayuu.so $^ $(LDFLAGS) -shared -fpic
+		
 
 %.o: %.c
 	$(CC) $(CCFLAGS) -DWAYUU_DIST -o $@ -c $<
@@ -58,6 +64,7 @@ print_src:
 	$(info $$OBJ_TEST is [${OBJ_TEST}])
 
 	
-
+install:
+	@cp libwayuu.so /usr/lib
 
 

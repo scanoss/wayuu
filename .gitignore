@@ -7,5 +7,5 @@
 wayuu
 test-wayuu
 *.o
-
+*.so
 .vagrant/
