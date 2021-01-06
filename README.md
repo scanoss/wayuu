@@ -73,6 +73,7 @@ for more than 10 seconds
 WAYUU uses standard Linux GNU extensions as well as OpenSSL and libcrypto. You can use build WAYUU easily with GCC and Make. 
 
 - `make`: Builds the `wayuu` binary.
+- `sudo make install`: Install wayuu shared libraries and headers.
 - `make test`: Executes the unit tests. 
 
 

@@ -2,7 +2,7 @@ CC=gcc
 # Enable all compiler warnings. 
 CCFLAGS=-g -Wall
 # Linker flags
-LDFLAGS=-lpthread -lssl -lm -lcrypto -I.
+LDFLAGS=-lpthread -lssl -lm -lcrypto -lcurl -I.
 # Valgrind flags
 VGFLAGS ?= \
 	--quiet --leak-check=full --show-leak-kinds=all \
@@ -15,6 +15,7 @@ TEST_SOURCES=$(wildcard test/*.c) $(wildcard test/**/*.c)
 OBJ_TEST=$(patsubst %.c,%.o,$(TEST_SOURCES))
 OBJECTS=$(SOURCES:.c=.o)
 TESTABLE_OBJECTS=$(filter-out main.o,$(SOURCES:.c=.o))
+WAYUU_HEADERS=$(wildcard *.h)
 TARGET=wayuu
 
 slib: CCFLAGS:=$(CCFLAGS) -fpic
@@ -66,5 +67,7 @@ print_src:
 	
 install:
 	@cp libwayuu.so /usr/lib
+	
+	@mkdir -p /usr/include/wayuu
 
-
+	@cp $(WAYUU_HEADERS) /usr/include/wayuu
