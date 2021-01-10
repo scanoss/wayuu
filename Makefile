@@ -79,4 +79,4 @@ deb: $(TARGET) slib
 	@cp -vax $(WAYUU_HEADERS) dist/debian/usr/include/wayuu
 	@cp -vax libwayuu.so dist/debian/usr/lib
 	dpkg-deb --build dist/debian
-	mv dist/debian.deb wayuu-$(VERSION)-amd64.deb
+	mv dist/debian.deb dist/wayuu-$(VERSION)-amd64.deb
