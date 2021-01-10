@@ -69,9 +69,11 @@ install:
 	@cp $(WAYUU_HEADERS) /usr/include/wayuu
 
 deb: $(TARGET) slib
+	@rm -rf dist/debian
 	@mkdir -p dist/debian/DEBIAN
 	@mkdir -p dist/debian/usr/include/wayuu
 	@mkdir -p dist/debian/usr/lib
+	@mkdir -p dist/debian/usr/bin
 	cat packages/debian/control | sed "s/%VERSION%/$(VERSION)/" > dist/debian/DEBIAN/control
 	@cp -vax $(TARGET) dist/debian/usr/bin
 	@cp -vax $(WAYUU_HEADERS) dist/debian/usr/include/wayuu
