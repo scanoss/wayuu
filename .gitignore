@@ -3,6 +3,8 @@
 *.a
 *.out
 *.log
+*.deb
+dist/
 
 wayuu
 test-wayuu

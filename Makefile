@@ -1,6 +1,6 @@
 CC=gcc
 # Enable all compiler warnings. 
-CCFLAGS=-g -Wall
+CCFLAGS=-g -Wall -fPIC
 # Linker flags
 LDFLAGS=-lpthread -lssl -lm -lcrypto -I.
 # Valgrind flags
@@ -17,14 +17,12 @@ OBJECTS=$(SOURCES:.c=.o)
 TESTABLE_OBJECTS=$(filter-out main.o,$(SOURCES:.c=.o))
 WAYUU_HEADERS=$(wildcard *.h)
 TARGET=wayuu
-
-slib: CCFLAGS:=$(CCFLAGS) -fpic
+VERSION:=`./wayuu -v`
 
 all: clean $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CC) -g -o $@ $^ $(LDFLAGS)
-	rm -f *.o **/*.o 
+	$(CC) -g -o $@ $^ $(LDFLAGS) 
 
 lib: $(TESTABLE_OBJECTS)
 	rm -f libwayuu.a
@@ -67,7 +65,16 @@ print_src:
 	
 install:
 	@cp libwayuu.so /usr/lib
-	
 	@mkdir -p /usr/include/wayuu
-
 	@cp $(WAYUU_HEADERS) /usr/include/wayuu
+
+deb: $(TARGET) slib
+	@mkdir -p dist/debian/DEBIAN
+	@mkdir -p dist/debian/usr/include/wayuu
+	@mkdir -p dist/debian/usr/lib
+	cat packages/debian/control | sed "s/%VERSION%/$(VERSION)/" > dist/debian/DEBIAN/control
+	@cp -vax $(TARGET) dist/debian/usr/bin
+	@cp -vax $(WAYUU_HEADERS) dist/debian/usr/include/wayuu
+	@cp -vax libwayuu.so dist/debian/usr/lib
+	dpkg-deb --build dist/debian
+	mv dist/debian.deb wayuu-$(VERSION)-amd64.deb

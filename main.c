@@ -32,13 +32,14 @@ char *REDIR_PATHS[] = {""};
 
 void print_usage()
 {
-  printf("USAGE: wayuu [-d] [-b ip_addr] [-p port] [-r root] [-f]\n");
+  printf("USAGE: wayuu [-d] [-b ip_addr] [-p port] [-r root] [-f] [-v]\n");
   printf("Options:\n");
   printf("-d         : Enabled DEBUG mode\n");
   printf("-b ip_addr : Bind to IP address. Default: \"0.0.0.0\"\n");
   printf("-p port    : Bind to TCP port. Default: 4443\n");
   printf("-r root    : Use root as the root folder for WAYUU. Default: /etc/wayuu\n");
   printf("-f         : HTTP mode\n");
+  printf("-v         : Print version and exits \n");
 }
 
 int main(int argc, char *argv[])
@@ -57,7 +58,7 @@ int main(int argc, char *argv[])
 
   int opt;
   
-  while ((opt = getopt(argc, argv, ":b:p:r:hdf")) != -1)
+  while ((opt = getopt(argc, argv, ":b:p:r:hdfv")) != -1)
   {
     switch (opt)
     {
@@ -70,6 +71,10 @@ int main(int argc, char *argv[])
       break;
     case 'h':
       print_usage();
+      exit(EXIT_SUCCESS);
+      break;
+    case 'v':
+      printf("%s\n",WAYUU_WS_VERSION);
       exit(EXIT_SUCCESS);
       break;
     case 'b':
