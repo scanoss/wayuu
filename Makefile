@@ -2,7 +2,7 @@ CC=gcc
 # Enable all compiler warnings. 
 CCFLAGS=-g -Wall
 # Linker flags
-LDFLAGS=-lpthread -lssl -lm -lcrypto -lcurl -I.
+LDFLAGS=-lpthread -lssl -lm -lcrypto -I.
 # Valgrind flags
 VGFLAGS ?= \
 	--quiet --leak-check=full --show-leak-kinds=all \
