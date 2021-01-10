@@ -1,0 +1,10 @@
+Package: wayuu
+Version: %VERSION%
+Depends: libssl1.1
+Section: custom
+Priority: optional
+Architecture: all
+Essential: no
+Installed-Size: 61856
+Maintainer: scanoss.com
+Description: WAYUU is a blazing fast, lightweight web server and a microframework for building web applications and services
