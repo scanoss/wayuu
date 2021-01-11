@@ -22,6 +22,7 @@
  * 
  * 
  */
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -140,7 +141,10 @@ void router_handle_request(api_request *request)
       }
       else
       {
-        request->form += sprintf("&%s", qs);
+        char *param;
+        asprintf(&param, "&%s", qs);
+        strcat(request->form, param);
+        free(param);
       }
       free(qs);
       handler = routing_table.handlers[i];
