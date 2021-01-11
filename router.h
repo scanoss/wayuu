@@ -71,7 +71,7 @@ void router_handle_request(api_request *request);
  * - Matcher syntax: METHOD:PATH 
  * - METHOD: The HTTP Method, for now only GET, POST, DELETE are supported
  * - PATH: The HTTP Request path, relative to the API mount point (/api). Example: /user/list
- * - Path parameters are not supported, only query parameters. 
+ * - Path parameters are supported, as well as query parameters. 
  */
 void router_add_route(char *matcher, request_handler handler, request_filter filter);
 
