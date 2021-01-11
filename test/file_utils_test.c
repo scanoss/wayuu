@@ -29,7 +29,7 @@ describe(file_utils)
 
     it("returns true if folder already exists")
     {
-      assert(check_createdir("/var/lib/scanoss/storage"));
+      assert(check_createdir("/tmp"));
     }
     it("returns true if folder is new and was successfully created")
     {
