@@ -6,7 +6,7 @@ LDFLAGS=-lpthread -lssl -lm -lcrypto -I.
 # Valgrind flags
 VGFLAGS ?= \
 	--quiet --leak-check=full --show-leak-kinds=all \
-	--track-origins=yes --error-exitcode=1 --keep-debuginfo=yes 
+	--track-origins=yes --error-exitcode=1 
 
 SOURCES=$(wildcard *.c)
 # TESTABLE_SOURCES are $SOURCES without main.c
