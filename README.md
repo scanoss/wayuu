@@ -1,4 +1,5 @@
 # WAYUU
+[![Build Status](https://travis-ci.com/scanoss/wayuu.svg?branch=master)](https://travis-ci.com/scanoss/wayuu)
 
 WAYUU is a blazing fast, lightweight web server and a microframework for building web applications and services.
 
