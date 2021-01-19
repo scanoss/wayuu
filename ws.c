@@ -304,6 +304,7 @@ void handle_static_routes(api_request *req)
 {
 	log_debug("Handle static route: %s", req->path);
 	char path[1024];
+	int pathlen = strlen(path);
 	/**
 	 *  Handle default routes. URL Rewritting.
 	 */
@@ -313,13 +314,22 @@ void handle_static_routes(api_request *req)
 		req->path = strdup(WWW_INDEX);
 	}
 
-	if (strcmp(req->path, "/favicon.ico") == 0)
+	else if (strcmp(req->path, "/favicon.ico") == 0)
 	{
 		free(req->path);
 		req->path = strdup(FAVICON_URL);
 	}
+	// If static route ends with '/', then redirect to the index.html in the folder.
+	else if (path[pathlen-1] == '/')
+	{
+
+		sprintf(path, "%s%s", req->path, "index.html");
+		free(req->path);
+		req->path = strdup(path);
+	}
 
 	sprintf(path, "%s/%s", WAYUU_STATIC_ROOT, req->path);
+
 	log_debug("IP:%s GET: %s, PATH: %s", req->IP, req->path, path);
 	// If the file is not found return /index.html
 	if (direct_file(req, path) < 0)
