@@ -73,7 +73,10 @@ char *json_array_of_entities(json_list_t list)
   strcpy(json, JSON_ARRAY_BEGIN);
   strcat(json, joined_str);
   strcat(json, JSON_ARRAY_END);
-  free(joined_str);
+  
+  if (joined_str && *joined_str!='\0')
+    free(joined_str);
+ 
   for (int i = 0; i < list.size; i++)
   {
     free(json_entities[i]);
