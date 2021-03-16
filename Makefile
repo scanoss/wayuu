@@ -1,6 +1,6 @@
 CC=gcc
 # Enable all compiler warnings. 
-CCFLAGS=-g -Wall -fPIC
+CCFLAGS=-g -Wall -fPIC -Werror -std=gnu99
 # Linker flags
 LDFLAGS=-lpthread -lssl -lm -lcrypto -I.
 # Valgrind flags
