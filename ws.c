@@ -299,7 +299,7 @@ void handle_api_request(api_request *req, long content_length, char *multipart_b
 		
 		if (strlen(req->query_string) == 0)
 		{
-			req->query_string = calloc(1, sizeof(req->form));
+			req->query_string = calloc(1, sizeof(req->form)+1);
 			strcpy(req->query_string, req->form);
 		}
 	}
