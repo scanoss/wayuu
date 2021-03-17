@@ -277,7 +277,6 @@ void handle_api_request(api_request *req, long content_length, char *multipart_b
 		if (req->query_string[0] != 0)
 			log_debug("IP: %s PARAMETERS: %s", req->IP, req->query_string);
 	}
-	// Copy QS to req->form
 
 	/* Retrieve form data */
 	
@@ -297,11 +296,6 @@ void handle_api_request(api_request *req, long content_length, char *multipart_b
 		if (strlen(multipart_boundary) >= 2)
 			multipart_parse(req->form, req->IP, multipart_boundary, content_length);
 		
-		if (strlen(req->query_string) == 0)
-		{
-			req->query_string = calloc(1, sizeof(req->form)+1);
-			strcpy(req->query_string, req->form);
-		}
 	}
 	// Delegate request to router
 	router_handle_request(req);
