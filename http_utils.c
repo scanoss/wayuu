@@ -529,3 +529,46 @@ char *http_get_header(api_request *req, char *name)
 	return "";
 }
 
+char *return_response(call_response_t rsp)
+{
+	char *aux;
+	char *aux_err;
+	char *aux_txt;
+	char *aux_additional_info;
+	char *aux_description;
+
+	if (rsp.status == -1)
+		asprintf(&aux_err, "\"RSP\":\"FAIL\"");
+	if (rsp.status == 0)
+		asprintf(&aux_err, "\"RSP\":\"OK\"");
+	if (rsp.status == 1)
+		asprintf(&aux_err, "\"RSP\":\"ERROR\"");
+	if (rsp.status == 2)
+		asprintf(&aux_err, "\"RSP\":\"WARNING\"");
+	if (rsp.text)
+		asprintf(&aux_txt, ", \"info\":\"%s\"", rsp.text);
+	if (rsp.description)
+		asprintf(&aux_description, ", \"description\":\"%s\"", rsp.description);
+
+	if (rsp.additional_info != NULL)
+		asprintf(&aux_additional_info, ",\"data\":%s", rsp.additional_info);
+	else
+		asprintf(&aux_additional_info, ",\"data\":%s", "\"\"");
+
+	asprintf(&aux, "{%s%s%s%s}", aux_err, (aux_txt ? aux_txt : ""), (aux_description ? aux_description : ""), (aux_additional_info ? aux_additional_info : ""));
+
+	if (aux_err)
+		free(aux_err);
+
+	if (aux_additional_info)
+		free(aux_additional_info);
+
+	if (aux_description)
+		free(aux_description);
+
+	if (aux_txt)
+		free(aux_txt);
+
+	return aux;
+}
+
