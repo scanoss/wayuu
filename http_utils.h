@@ -32,7 +32,7 @@
 
 #define CRLF "\r\n"
 #define HTTP_VERSION "HTTP/1.1"
-#define WAYUU_WS_VERSION "1.4.4"
+#define WAYUU_WS_VERSION "1.4.6"
 #define WAYUU_HTTP_SERVER_STRING "Server: WAYUU/" WAYUU_WS_VERSION CRLF
 // HTTP STATUS STRINGS. 
 #define HTTP_OK_START HTTP_VERSION " 200 OK\r\n"
@@ -68,6 +68,14 @@
 
 #define HTTP_MAX_PATH 512 // Max path length in URI
 #define HTTP_MAX_IP 16 // Max length of an IP address
+
+
+
+
+#define RSP_FAIL -1
+#define RSP_DONE  0
+#define RSP_ERROR  1
+#define RSP_WARN  2
 
 /**
  * WAYUU_SSL_ON is a global that defines whether WAYUU is in SSL mode (HTTPS) or plain HTTP.
@@ -207,5 +215,14 @@ char *http_get_header(api_request *req, char *name);
 
 
 char *get_content_type(char *filename);
+
+typedef struct call_response{
+   int status;
+   char text[50];
+   char description[256];
+   char *additional_info;
+} call_response_t;
+
+char * return_response(call_response_t rsp);
 
 #endif
