@@ -366,9 +366,9 @@ void bad_request(api_request *req)
 	send_http_status(req, 400, "");
 }
 
-void bad_request_with_error(api_request *req, error_t *error)
+void bad_request_with_error(api_request *req, wayuu_error_t *error)
 {
-	char *error_json = error_t_json_serializer(error);
+	char *error_json = wayuu_error_t_json_serializer(error);
 	return_json_with_status(req, 400, error_json);
 	free(error_json);
 }
@@ -378,9 +378,9 @@ void forbidden(api_request *req)
 	send_http_status(req, 403, "");
 }
 
-void forbidden_with_error(api_request *req, error_t *error)
+void forbidden_with_error(api_request *req, wayuu_error_t *error)
 {
-	char *error_json = error_t_json_serializer(error);
+	char *error_json = wayuu_error_t_json_serializer(error);
 	return_json_with_status(req, 403, error_json);
 	free(error_json);
 }
@@ -405,8 +405,8 @@ void internal_server_error(api_request *req)
 	send_http_status(req, 500, "");
 }
 
-void internal_server_error_with_error(api_request *req, error_t *error) {
-	char *error_json = error_t_json_serializer(error);
+void internal_server_error_with_error(api_request *req, wayuu_error_t *error) {
+	char *error_json = wayuu_error_t_json_serializer(error);
 	return_json_with_status(req, 500, error_json);
 	free(error_json);
 }
@@ -479,7 +479,7 @@ void free_path_and_query_t(path_and_query_t *p)
 	free(p);
 }
 
-char *error_t_json_serializer(error_t *error)
+char *wayuu_error_t_json_serializer(wayuu_error_t *error)
 {
 	if (error->code == NULL || strlen(error->code) == 0)
 	{
@@ -497,9 +497,9 @@ char *error_t_json_serializer(error_t *error)
 	return json;
 }
 
-error_t *new_error_with_values(char *code, char *message)
+wayuu_error_t *new_error_with_values(char *code, char *message)
 {
-	error_t *error = malloc(sizeof(error_t));
+	wayuu_error_t *error = malloc(sizeof(wayuu_error_t));
 	strcpy(error->code, code);
 	strcpy(error->message, message);
 	return error;

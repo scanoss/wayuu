@@ -171,7 +171,7 @@ describe(http_utils)
     it("should return a bad request with error")
     {
       init_mock_socket_buffer();
-      error_t *error = calloc(1, sizeof(error_t));
+      wayuu_error_t *error = calloc(1, sizeof(wayuu_error_t));
       strcpy(error->code, "TEST_CODE");
       strcpy(error->message, "This is a test message");
       api_request *req = new_test_api_request(0, "0.0.0.0", "");

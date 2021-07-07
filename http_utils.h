@@ -90,11 +90,11 @@ extern bool WAYUU_SSL_ON;
  *   code: string
  *   message: string
  */
-typedef struct error_t
+typedef struct wayuu_error_t
 {
   char code[HTTP_MAX_ERROR_CODE_LEN];
   char message[HTTP_MAX_ERROR_MSG_LEN];
-} error_t;
+} wayuu_error_t;
 
 typedef struct
 {
@@ -151,7 +151,7 @@ typedef struct path_limits
 int http_read_char(api_request *req, char *c);
 
 // ERROR Handling
-char *error_t_json_serializer(error_t *error);
+char *wayuu_error_t_json_serializer(wayuu_error_t *error);
 
 int return_headers(api_request *req, char *filename);
 int return_headers_with_mime(api_request *req, int status, char *mime_type);
@@ -177,14 +177,14 @@ void not_found(api_request *req);
 void not_authenticated(api_request *req);
 void bad_request(api_request *req);
 void too_many_connections(api_request *req);
-void bad_request_with_error(api_request *req, error_t *error);
+void bad_request_with_error(api_request *req, wayuu_error_t *error);
 void forbidden(api_request *req);
-void forbidden_with_error(api_request *req, error_t *error);
+void forbidden_with_error(api_request *req, wayuu_error_t *error);
 void ok(api_request *req);
 void created(api_request *req);
 void created_with_json(api_request *req, char *data);
 void internal_server_error(api_request *req);
-void internal_server_error_with_error(api_request *req, error_t *error);
+void internal_server_error_with_error(api_request *req, wayuu_error_t *error);
 
 void send_http_status(api_request *req, int status, char *message);
 
@@ -198,7 +198,7 @@ typedef struct path_and_query_t
 path_and_query_t *get_path_and_query_string(char *url);
 void free_path_and_query_t(path_and_query_t *p);
 
-error_t *new_error_with_values(char *code, char *message);
+wayuu_error_t *new_error_with_values(char *code, char *message);
 
 // HTTP HEADER UTILS
 
