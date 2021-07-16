@@ -31,7 +31,7 @@
 #define FILE_DOWNLOAD_TMP_DIR "/tmp/wayuu"
 
 // WS Worker Thread pool size
-#define WS_THREAD_POOL_SIZE 20
+#define WS_THREAD_POOL_SIZE 200
 // Maximum amount of connections held in the WS queue
 #define WS_MAX_CONNECTIONS 1024
 

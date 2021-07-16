@@ -139,10 +139,10 @@ typedef struct connections
 /* Stores API limits by path */
 typedef struct path_limits
 {
-    char path[HTTP_MAX_PATH];
-	char max_connections;
-	char max_connections_per_ip;
-	char max_seconds;
+	char path[HTTP_MAX_PATH];
+	int max_connections;
+	int max_connections_per_ip;
+	int max_seconds;
 } path_limits;
 
 /**
