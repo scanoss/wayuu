@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 
   /* Launch webservice */
   log_set_file(WAYUU_LOGFILE);
-  ws_launch(ws_port, bind_addr);
+  ws_launch(ws_port, bind_addr, NULL);
   log_close_file();
   free(live_connections);
   exit(EXIT_SUCCESS);

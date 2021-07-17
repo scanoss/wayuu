@@ -53,6 +53,12 @@ const char *COOKIE_HEADERS[] = {"X-Session:", "Authorization:", ""};
 // LIST OF ALLOWED HTTP METHODS. Last element must be NULL so that startswithany can work.
 const char *ALLOWED_HTTP_METHODS[] = {"GET", "POST", "PUT", "DELETE", NULL};
 
+//http layer 
+void accept_request(int socket);
+//process socket as http by default
+ws_socket_handler socket_handler = &accept_request;
+
+
 void wayuu_failed()
 {
 	printf("Service failed. Please check %s for details\n", WAYUU_LOGFILE);
@@ -689,12 +695,13 @@ static void *ws_connection_handler()
 	while (1)
 	{
 		socket = ws_queue_get();
-		accept_request(socket);
+		//accept_request(socket);
+		socket_handler(socket);
 	}
 	return NULL;
 }
 
-void ws_launch(int port, char *bind_addr)
+void ws_launch(int port, char *bind_addr, ws_socket_handler handler)
 {
 
 	int server_sock = -1;
@@ -713,6 +720,10 @@ void ws_launch(int port, char *bind_addr)
 		ctx = create_context();
 		configure_context(ctx);
 	}
+
+	if (handler)
+		socket_handler = handler;
+
 	/* Load path limits */
 	live_connections = calloc(sizeof(connections), WS_MAX_CONNECTIONS);
 	limits = load_limits();

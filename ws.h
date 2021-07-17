@@ -85,10 +85,13 @@ path_limits *limits;
  */
 typedef void (*ws_url_rewrite)(char *url);
 
+typedef void (*ws_socket_handler)(int socket);
+
+
 /**
  * ws_launch: Launches Wayuu in the port and IP given. 
  */
-void ws_launch(int port, char *bind_addr);
+void ws_launch(int port, char *bind_addr,  ws_socket_handler handler);
 
 void handle_static_routes(api_request *req);
 
