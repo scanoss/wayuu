@@ -1,4 +1,6 @@
+ifeq ($(origin CC),default)
 CC=gcc
+endif
 # Enable all compiler warnings. 
 CCFLAGS=-g -Wall -fPIC -Werror -std=gnu99
 # Linker flags
