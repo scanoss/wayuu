@@ -19,7 +19,7 @@ WAYUU_HEADERS=$(wildcard *.h)
 TARGET=wayuu
 VERSION:=`./wayuu -v`
 
-all: clean $(TARGET)
+all: clean $(TARGET) slib
 
 $(TARGET): $(OBJECTS)
 	$(CC) -g -o $@ $^ $(LDFLAGS) 
@@ -52,7 +52,7 @@ run-valgrind: $(TARGET)
 
 .PHONY: clean
 clean:
-	rm -f *.o **/*.o test/*.o test/**/*.o $(TARGET) test-$(TARGET)
+	rm -f *.o **/*.so **/*.o test/*.o test/**/*.o  $(TARGET) test-$(TARGET)
 	
 .PHONY: print_src
 print_src:
