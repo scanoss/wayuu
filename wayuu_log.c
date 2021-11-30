@@ -15,7 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+/**
+  * @file router.c
+  * @date 11 Jul 2020
+  * @brief Abstraction layer of the logger
+  */
 #include <pthread.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -33,7 +37,11 @@
 
 
 /**
- * Logs access in NGINX Combined log format.
+ * @brief Writes an access to the service in the file WAYUU_ANALYTICS_LOG .
+ * Format: NGINX Combined log format.
+ * 
+ * @param req Structure containing the request client
+ * @param status HTTP status code to be written in the log
  */
 void log_access(api_request *req, int status)
 {
@@ -56,6 +64,12 @@ void log_access(api_request *req, int status)
     free(ua);
 }
 
+/** 
+ * @brief Calculates epoch time with millisecond accuracy.
+ * 
+ * @return double Epoch time in milliseconds
+ */
+
 uint64_t epoch_millis()
 {
   struct timeval tv;
@@ -66,6 +80,12 @@ uint64_t epoch_millis()
          (uint64_t)(tv.tv_usec) / 1000;
 }
 
+/** 
+ * @brief Calculates the response time of the request (from server perspective).
+ * 
+ * @param req Structure containing the request client
+ * @return double Response time in seconds
+ */
 double response_time(api_request *req)
 {
   return (double)(epoch_millis() - req->request_start) / 1000;

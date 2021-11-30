@@ -16,6 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/**
+  * @file string_utils.c
+  * @date 24 Nov 2021
+  * @brief Implements a simple routing framework for the API.
+  */
+
 #include <stdint.h>
 #include <openssl/md5.h>
 #include <stdlib.h>
@@ -25,6 +31,11 @@
 #include "log.h"
 #include "string_utils.h"
 
+/**
+ * @brief Chops string at the next character less than 34 ASCII ('"')
+ * 
+ * @param data Pointer to the string. Must be NULL terminated
+ */
 void chop_string(char *data)
 {
   int len = strlen(data);
@@ -38,6 +49,11 @@ void chop_string(char *data)
   }
 }
 
+/**
+ * @brief Eliminates leading and trailing spaces
+ * 
+ * @param str String ending with null character
+ */
 void trim(char *str)
 {
   int i = 0;
@@ -60,7 +76,11 @@ void trim(char *str)
 }
 
 /**
- * rtrim: Returns a subtring of the original string until the first occurrence of the character 'sep'.
+ * @brief Returns a substring of the original string until the first occurrence of the character 'sep'
+ * 
+ * @param str String ending with null character
+ * @param sep Character to search for
+ * @return char* Pointer to the substring
  */
 char *rtrim(const char *str, char sep)
 {
@@ -76,7 +96,11 @@ char *rtrim(const char *str, char sep)
 }
 
 /**
- * ltrim: Returns a substring of the original string from the first occurrence of character 'sep'
+ * @brief Returns a substring of the original string from the first occurrence of character 'sep'
+ * 
+ * @param str String ending with null character
+ * @param sep Character to search for
+ * @return char* Pointer to the substring
  */
 char *ltrim(const char *str, char sep)
 {
@@ -91,6 +115,13 @@ char *ltrim(const char *str, char sep)
   return strdup(str);
 }
 
+/**
+ * @brief Returns a hex representation of the MD5 of the input 'data' string.
+ * 
+ * @param out pointer to the output buffer
+ * @param data data to hash
+ * @param len length of data
+ */
 void md5sum(char *out, char *data, int len)
 {
 
@@ -122,8 +153,18 @@ void md5sum(char *out, char *data, int len)
   free(md5);
 }
 
-/*
- * join: returns a dynamically allocated string with all the elements separated by the delimiter specified.
+/**
+ * @brief  Returns a dynamically allocated string with all the elements 
+ * separated by the delimiter specified.
+ * 
+ * Ex: { "test1" , "test2" , "test3" } -> "test1,test2,test3"
+ * 
+ * @IMPORTANT: The returned string must be freed by the caller
+ * 
+ * @param array array of strings 
+ * @param size number of elements in the array 
+ * @param delim delimiter to use 
+ * @return char* 
  */
 char *join(char **array, int size, char *delim)
 {
@@ -160,6 +201,16 @@ char *join(char **array, int size, char *delim)
   return joined_str;
 }
 
+/**
+ * @brief Divides a string into a list of substrings, 
+ * puts these substrings into an array, and returns the array
+ * 
+ * Ex: "test1,test2,test3" -> { "test1" , "test2" , "test3" } (str_list_t)
+ * 
+ * @param str String to split
+ * @param delim Delimiter to use
+ * @return str_list_t* Struct with all the values separated by the delimiter
+ */
 str_list_t *split(char *str, char *delim)
 {
   char *str_copy = strdup(str);
@@ -181,6 +232,14 @@ str_list_t *split(char *str, char *delim)
   free(str_copy);
   return result;
 }
+
+/**
+ * @brief Variant of split, only splits at most once the string by the separator.
+ * 
+ * @param str  
+ * @param delim  
+ * @return str_list_t* 
+ */
 
 str_list_t *split_once(char *str, char *delim)
 {
@@ -208,6 +267,11 @@ str_list_t *split_once(char *str, char *delim)
   return result;
 }
 
+/**
+ * @brief Free the memory allocated by split
+ * 
+ * @param list Points to the struct returned by split
+ */
 void free_str_list_t(str_list_t *list)
 {
   for (int i = 0; i < list->n_str; i++)
@@ -218,7 +282,12 @@ void free_str_list_t(str_list_t *list)
 }
 
 /**
- * startswith: Returns true if str starts with prefix.
+ * @brief Verify if a string starts with a prefix. 
+ * 
+ * @param str String to check.
+ * @param prefix Prefix to check.
+ * 
+ * @return true if str starts with prefix. False otherwise.
  */
 bool startswith(char *str, const char *prefix)
 {
@@ -226,8 +295,9 @@ bool startswith(char *str, const char *prefix)
 }
 
 /**
- * startswithany: Checks if any of the strings in the list is contained in the string and returns true
- * otherwise it returns false.
+ * @brief Checks if any of the strings in the list is contained in the string.
+ * 
+ * @returns true if there is a match, false otherwise.
  *
  * IMPORTANT: list has to be an array of strings with the last element an empty string, "". This saves having to add
  * an extra argument with the size of the array.
@@ -249,7 +319,13 @@ bool startswithany(char *str, const char *list[])
 }
 
 /**
- * text_find_after: Returns position in haystack right after end of needle, or -1 if not found 
+ * @brief Returns position in haystack right after end of needle, or -1 if not found
+ * 
+ * @param haystack Main text 
+ * @param needle Substring to search for.
+ * @param start Position to start searching the needle in the haystack. 0 to search from the beginning.
+ * @param bytes Length of the haystack.
+ * @return long Returns position in haystack right after end of needle, or -1 if not found 
  */
 long text_find_after(char *haystack, char *needle, long start, long bytes)
 {
@@ -273,6 +349,12 @@ long text_find_after(char *haystack, char *needle, long start, long bytes)
   return -1;
 }
 
+/**
+ * @brief Checks whether the argument passed has only an alphanumeric character or not.
+ * 
+ * @param data Data to check
+ * @return true if the data has only alphanumeric characters. False otherwise.
+ */
 bool string_isalnum(char *data)
 {
 

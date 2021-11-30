@@ -16,6 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+
+/**
+  * @file http_utils.c
+  * @date 7 Jul 2021 
+  * @brief Contains helper functions for http operations
+  */
+
+
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE 1
 #endif
@@ -34,13 +42,21 @@
 #include "http_utils.h"
 
 /**
- * WAYUU_SSL_ON is a global that defines whether WAYUU is in SSL mode (HTTPS) or plain HTTP.
+ * @brief Is a global variable that defines whether WAYUU is in SSL mode (HTTPS) or plain HTTP.
  * By default SSL mode is enabled
  */
 bool WAYUU_SSL_ON = true;
 
 /**
- * http_read_char: Reads a char from the socket, supports SSL mode and plain HTTP.
+ * @brief Reads a char from the socket, supports SSL mode and plain HTTP.
+ * This is an abstraction to read a char from the client request.
+ * 
+ * If no messages are available in the socket queue, the recv calls will
+ * wait for a message to arrive, unless the socket is nonblocking.
+ * 
+ * @param req This is a api_request struct that contains what is needed to handle a particular request.
+ * @param c Pointer to the char to be read.
+ * @return int Char readed.
  */
 int http_read_char(api_request *req, char *c)
 {
@@ -70,6 +86,13 @@ const int HTTP_ERROR_STATUS[] = {200, 201, 400, 401, 403, 404, 429, 500};
 
 int HTTP_ERROR_N = sizeof(HTTP_ERROR_STATUS)/sizeof(HTTP_ERROR_STATUS[0]);
 
+/**
+ * @brief Search a HTTP error code in the static HTTP_ERROR_STARTS array 
+ * and returns the corresponding HTTP_ERROR_STATUS index.
+ * 
+ * @param status A HTTP error code.
+ * @return int Returns the index of the HTTP_ERROR_STATUS array. If the status is not found, returns -1.
+ */
 int _find_http_status_index(int status)
 {
 	int error_index = -1;
@@ -84,18 +107,26 @@ int _find_http_status_index(int status)
 	return error_index;
 }
 
+/**
+ * @brief Send headers to the client in order to prepare for a file transfer.
+ * The media type is calculated based on the file extension.
+ * 
+ * @param req Struct containing the client request.
+ * @param filename filepath to the file to be sent.
+ * @return int The lenght of the response header.
+ */
 int return_headers(api_request *req, char *filename)
 {
 	int len = 0;
 	char buf[1024];
 	sprintf(buf, "%s%s", HTTP_OK_START, WAYUU_HTTP_SERVER_STRING);
 	len += strlen(buf);
-	http_print(req, buf, len);
-	char *content_type = get_content_type(filename);
+	http_print(req, buf, len); // Sends the HTTP header
+	char *content_type = get_content_type(filename); 
 	strcat(buf, content_type);
 	free(content_type);
 	len += strlen(buf);
-	http_print(req, buf, strlen(buf));
+	http_print(req, buf, strlen(buf)); // Sends the header and the content type
 
 	if (strlen(req->session) > 0)
 	{
@@ -109,10 +140,19 @@ int return_headers(api_request *req, char *filename)
 	return len;
 }
 
+
+/**
+ * @brief Get the content-type/media-type from a filename
+ * The content type is determined by the file extension. 
+ * If the file extension is not recognized, the content type is set to application/octet-stream.  
+ * 
+ * @param filename path or name of the file.
+ * @return char* The content type.
+ */
 char *get_content_type(char *filename)
 {
 	char *buf = malloc(1024);
-	char *ext = strrchr(filename, '.');
+	char *ext = strrchr(filename, '.');	/** Gets the extention of the filename */
 	if (!ext || ext == filename)
 		sprintf(buf, CONTENT_TYPE_TEXT_HTML);
 	else if (strcmp(ext, ".html") == 0 || strcmp(ext, ".js") == 0)
@@ -143,6 +183,12 @@ char *get_content_type(char *filename)
 	return buf;
 }
 
+/**
+ * @brief Get the content type from a mime object
+ * 
+ * @param mime A string media type (image/jpeg, text/html, etc).
+ * @return char* The content type with media type (Content-Type: image/jpeg).
+ */
 char *get_content_type_for_mime(char *mime)
 {
 	char *buf = malloc(1024);
@@ -171,6 +217,14 @@ char *get_content_type_for_mime(char *mime)
 	return buf;
 }
 
+/**
+ * @brief Sends a file to the client. 
+ * The headers are not sent, see function return_headers();.
+ * 
+ * @param req Struct containing the client request.
+ * @param path filepath to the file to be sent.
+ * @return int The lenght of the file.
+ */
 int return_file(api_request *req, char *path)
 {
 
@@ -199,7 +253,16 @@ int return_file(api_request *req, char *path)
 }
 
 
-
+/**
+ * @brief Verify if a file exists and then dispatch the content to the client.
+ * This function will generate the headers and the body of the response.
+ * 
+ * See functions return_headers() and return_file();
+ * 
+ * @param req Structure containing the client request.
+ * @param filename filepath to the file 
+ * @return int 0 if the file exists and the content was sent to the client. Otherwise -1.
+ */
 int direct_file(api_request *req, char *filename)
 {
 	if (!is_file(filename))
@@ -215,7 +278,12 @@ int direct_file(api_request *req, char *filename)
 }
 
 /**
- * send_stream: Read from file until end and streams response until end. It doesn't send any HTTP headers.
+ * @brief Read data from a file and streams to the client.
+ * It doesn't send any HTTP headers.
+ * 
+ * @param req Structure containing the client request.
+ * @param fp File pointer to the file to be streamed.
+ * @return int The length of the stream. 
  */
 int send_stream(api_request *req, FILE *fp)
 {
@@ -233,6 +301,11 @@ int send_stream(api_request *req, FILE *fp)
 	return len;
 }
 
+/**
+ * @brief Just send an empty response to the client.
+ * 
+ * @param req Structure containing the client request.
+ */
 void send_empty_line(api_request *req)
 {
 	char buf[1024];
@@ -241,12 +314,11 @@ void send_empty_line(api_request *req)
 }
 
 /**
- * http_print: Writes data to the socket, it supports SSL or plain HTTP
+ * @brief Writes data to the socket, it supports SSL or plain HTTP
  * 
- * Parameters:
- * - req: api_request object
- * - data: void buffer, not necesarily char pointer
- * - length: length of the data sent. Required because this function should work with binary data as well as strings.
+ * @param req Structure containing the client request.
+ * @param data Data to be sent to the client.
+ * @param length length of the data. Required because this function should work with binary data as well as strings. 
  */
 void http_print(api_request *req, void *data, int length)
 {
@@ -261,18 +333,35 @@ void http_print(api_request *req, void *data, int length)
 }
 
 /**
- * http_print_str: Convenience function to print a char array over HTTP.
+ * @brief An easy way to send a string to the specified client.
+ * 
+ * @param req Structure containing the client request.
+ * @param data Data to be sent to the client. 
  */
 void http_print_str(api_request *req, char *data)
 {
 	http_print(req, data, strlen(data));
 }
 
+/**
+ * @brief Sends a serialized JSON to the client.
+ * It includes the HTTP headers and the body.
+ * 
+ * @param req Structure containing the client request.
+ * @param data A string representing the JSON data.
+ */
 void return_json(api_request *req, char *data)
 {
 	return_json_with_status(req, 200, data);
 }
 
+/**
+ * @brief Sends a list of JSON elements to the client.
+ * The list must contains a function that serializes the elements.
+ * 
+ * @param req Structure containing the client request.
+ * @param list A list that contains the JSON elements. 
+ */
 void return_json_list(api_request *req, json_list_t list)
 {
 	log_debug("Returning list with elements: %d", list.size);
@@ -287,7 +376,11 @@ void return_json_list(api_request *req, json_list_t list)
 }
 
 /**
- * return_json_headers: Returns the HTTP headers for a JSON response
+ * @brief Send headers to the client in order to prepare for a JSON transfer.
+ * 
+ * @param req Structure containing the client request.
+ * @param status HTTP status code.
+ * @return int The length of the response. 
  */
 int return_json_headers(api_request *req, int status)
 {
@@ -304,6 +397,16 @@ int return_json_headers(api_request *req, int status)
 	return strlen(buf);
 }
 
+/**
+ * @brief Send headers to the client in order to prepare for a file transfer.
+ * Unlike the return_headers function, this function does not automatically 
+ * calculate the media type and is required as a parameter
+ * 
+ * @param req Structure containing the client request. 
+ * @param status HTTP status code. 
+ * @param mime Media type. 
+ * @return int The length of the response. 
+ */
 int return_headers_with_mime(api_request *req, int status, char *mime)
 {
 	int error_index = _find_http_status_index(status);
@@ -329,6 +432,17 @@ void return_json_stream(api_request *req, int status, FILE *fp)
 	log_access(req, status);
 }
 
+/**
+ * @brief Sends a serialized JSON to the client. 
+ * It includes the HTTP headers and the body.
+ * 
+ * Unlike the return_json function, this function needs the HTTP code
+ * as a parameter.
+ * 
+ * @param req Structure containing the client request. 
+ * @param status HTTP status code. 
+ * @param data A string representing the JSON data. 
+ */
 void return_json_with_status(api_request *req, int status, char *data)
 {
 	int len = return_json_headers(req, status);
@@ -346,26 +460,69 @@ void return_json_with_status(api_request *req, int status, char *data)
 	log_access(req, status);
 }
 
+/**
+ * @brief Reject the request with a HTTP status code 404
+ * The HTTP 404 Not Found response status code indicates that 
+ * the server cannot find the requested resource.
+ * 
+ * https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404
+ * 
+ * @param req 
+ */
 void not_found(api_request *req)
 {
 	send_http_status(req, 404, "");
 }
 
+/**
+ * @brief Reject the request with a HTTP status code 429.
+ * The HTTP 429 Too Many Requests response status code indicates the user 
+ * has sent too many requests
+ * 
+ * https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429
+ * 
+ * @param req 
+ */
 void too_many_connections(api_request *req)
 {
 	send_http_status(req, 429, "");
 }
 
+/**
+ * @brief Reject the request with a HTTP status code 401.
+ * The HTTP 401 Unauthorized response code indicates 
+ * that the client request has not been completed because it lacks valid 
+ * authentication credentials for the requested resource.
+ * 
+ * https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+ * 
+ * @param req 
+ */
+
 void not_authenticated(api_request *req)
 {
 	send_http_status(req, 401, "");
 }
-
+/**
+ * @brief  Reject the request with a HTTP status code 400.
+ * The HTTP 400 Bad Request response status code indicates that the server cannot 
+ * or will not process the request due to something that is perceived to be a client error.
+ * 
+ * https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400
+ * 
+ * @param req 
+ */
 void bad_request(api_request *req)
 {
 	send_http_status(req, 400, "");
 }
 
+/**
+ * @brief Reject the request with a HTTP status code 400
+ * 
+ * @param req 
+ * @param error 
+ */
 void bad_request_with_error(api_request *req, wayuu_error_t *error)
 {
 	char *error_json = wayuu_error_t_json_serializer(error);
@@ -444,8 +601,11 @@ void send_http_status(api_request *req, int status, char *message)
 }
 
 /**
- * get_path_and_query_string: Returns the path and query string part of an URL. It will only work on GET
- * requests by definition.
+ * @brief Extracts the path and query string of an URL.
+ * It will only work on GET requests by definition.
+ * 
+ * @param url The URL to parse 
+ * @return path_and_query_t: The path and query string of the URL
  */
 path_and_query_t *get_path_and_query_string(char *url)
 {
@@ -469,6 +629,11 @@ path_and_query_t *get_path_and_query_string(char *url)
 	return result;
 }
 
+/**
+ * @brief Deallocates the path_and_query_t structure
+ * 
+ * @param p 
+ */
 void free_path_and_query_t(path_and_query_t *p)
 {
 	free(p->path);
@@ -505,6 +670,12 @@ wayuu_error_t *new_error_with_values(char *code, char *message)
 	return error;
 }
 
+/**
+ * @brief Logs all the http headers found in the HTTP REQUEST. 
+ * Make sure that LOG_DEBUG is enabled. 
+ * 
+ * @param req Struct containing the request
+ */
 void http_log_headers(api_request *req)
 {
 	if (log_level_is_enabled(LOG_DEBUG))
@@ -517,6 +688,14 @@ void http_log_headers(api_request *req)
 	}
 }
 
+/**
+ * @brief Returns the value of the header with given name
+ * Or NULL if the header is not found in the request.
+ * 
+ * @param req Struct containing the request
+ * @param name The name of the header
+ * @return char* The value of the header 
+ */
 char *http_get_header(api_request *req, char *name)
 {
 	for (int i = 0; i < req->n_headers; i++)

@@ -22,14 +22,20 @@
 #define _CONF_MAX_MULTI_ELEMENTS 20
 #define CONF_ITEM_SIZE sizeof(conf_item) + _CONF_MAX_MULTI_ELEMENTS
 #define _CONF_MAX_ITEMS 20
-// Maximum amount of multi valued values.
+
+
+/**
+ * @brief Maximum amount of multi valued values.
+ */
 #define MAX_MULTIVAL_LEN 50
 
-// Maximum length of a single line in a config file.
+/**
+ * @brief Maximum length of a single line in a config file.
+ */
 #define MAX_LINE_LEN 512
 
-/*
- * conf_item: Structure representing a line in a CONF file. 
+/**
+ * @brief Represents a line in a CONF file. 
  */
 typedef struct conf_item
 {
@@ -39,8 +45,8 @@ typedef struct conf_item
   int n_multivalues;
 } conf_item;
 
-/*
- * serializable: a structure containing an array of conf_items and a location. Designed to simplify serialisation.
+/**
+ * @brief Contains an array of conf_items and a location. Designed to simplify serialisation.
  */
 typedef struct serializable
 {

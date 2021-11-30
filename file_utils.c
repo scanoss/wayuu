@@ -15,6 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+
+/**
+  * @file file_utils.c
+  * @date 11 Jul 2020 
+  * @brief Contains helper functions for file operations.
+  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,6 +30,14 @@
 #include "log.h"
 #include "file_utils.h"
 
+/**
+ * @brief Opens a file and search for a string.
+ * 
+ * 
+ * @param path Path to the file.
+ * @param needle String to search.
+ * @return true String found, false String not found or path not found.
+ */
 bool find_in_file(char *path, char *needle)
 {
 
@@ -42,6 +58,11 @@ bool find_in_file(char *path, char *needle)
   return result;
 }
 
+/**
+ * @brief Check if a directory exists, if not create it.
+ * @param path path to the directory.
+ * @return true Directory created. False Directory not created.
+ */
 bool check_createdir(char *path)
 {
   if (!is_dir(path) && mkdir(path, 0755))
@@ -50,6 +71,13 @@ bool check_createdir(char *path)
   }
   return true;
 }
+
+/**
+ * @brief Verify if the path exists and is a directory.
+ * 
+ * @param path Path to the directory.
+ * @return true Path is a directory, false if Path is not a directory or does not exist.
+ */
 
 bool is_dir(char *path)
 {
@@ -61,6 +89,12 @@ bool is_dir(char *path)
   return false;
 }
 
+/**
+ * @brief Verify if the path exists and is a file.
+ * 
+ * @param path Path to the file.
+ * @return true Path is a file, false if Path is not a file or does not exist.
+ */
 bool is_file(char *path)
 {
   struct stat pstat;
@@ -69,7 +103,13 @@ bool is_file(char *path)
       return true;
   return false;
 }
-
+/**
+ * @brief Reads a file into a buffer.
+ * 
+ * @param out Buffer to store the content of the file.
+ * @param path Path to the file.
+ * @param maxlen Max length of the buffer.
+ */
 void read_file(char *out, char *path, uint64_t maxlen)
 {
 
@@ -104,6 +144,13 @@ void read_file(char *out, char *path, uint64_t maxlen)
   }
 }
 
+/**
+ * @brief Write a buffer to a file.
+ * 
+ * @param path Path to the file. If the file exists it will be overwritten.
+ * @param buffer Buffer to write.
+ * @param length Length of the buffer.
+ */
 void write_file(char *filename, char *ptr, int size)
 {
   log_debug("write_file(filename=%s, strlen(ptr)=%d, size=%d)", filename, strlen(ptr), size);

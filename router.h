@@ -36,20 +36,27 @@
 #define MAX_PARAM_LENGTH 64
 
 typedef struct route_matcher {
-  int type;
-  char prefix[MAX_ROUTE_PATH];
-  char param[MAX_PARAM_LENGTH];
+  int type; /**< Whether or not expects a parameter in the route. MATCHER_TYPE_CONSTANT or MATCHER_TYPE_PARAM (see file router.c) */
+  char prefix[MAX_ROUTE_PATH]; /**< Complete path of the route. If the route has a parameter it is included*/
+  char param[MAX_PARAM_LENGTH]; /**< The parameter name if the route is a parameter. */
 } route_matcher;
 
 /**
- * request_handler: function that handles the request.
+ * @brief: function that handles the request.
+ * 
+ * For more information see README.md
  */
 typedef void (*request_handler)(api_request *req);
 
 /**
- * request_filter: filter to apply to the request. It returns true if successful and false otherwise. 
+ * @brief: filter to apply to the request. It returns true if successful and false otherwise. 
  * When filter returns false the router will assume that the request has completed and will not invoke handler. 
  * The filter must handle error responses. 
+ * 
+ * An optional mechanism that can be used to implement features such as enpoint authentication, 
+ * security and logging functionality.
+ * 
+ * For more information see README.md
  */
 typedef bool (*request_filter)(api_request *req);
 
@@ -65,14 +72,6 @@ void router_init();
  */
 void router_handle_request(api_request *request);
 
-/**
- * router_add_route: Adds a route to the global routing table.
- * 
- * - Matcher syntax: METHOD:PATH 
- * - METHOD: The HTTP Method, for now only GET, POST, DELETE are supported
- * - PATH: The HTTP Request path, relative to the API mount point (/api). Example: /user/list
- * - Path parameters are supported, as well as query parameters. 
- */
 void router_add_route(char *matcher, request_handler handler, request_filter filter);
 
 void reject_routing_request(api_request *req);

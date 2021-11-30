@@ -16,6 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/**
+  * @file log.c
+  * @date 11 Jul 2020 
+  * @brief Contains helper functions for logging
+  */
+
 #include <pthread.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -30,12 +36,22 @@
 static const char *level_names[] = {
     "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"};
 
-// Default log level is INFO
+/**
+ * @brief Default log level is INFO
+ */
 static int LEVEL = LOG_INFO;
 
-// Default log file is STDERR
+/**
+ * @brief Default log file is STDERR
+ */
 static FILE *LOG_FILE = NULL;
 
+/**
+ * @brief Gets the current UTC time
+ * Example: 30-11-21 00:08:36
+ * 
+ * @return char* A string with the current UTC time
+ */
 char *format_timestamp()
 {
   // I. Format timestamp
@@ -48,7 +64,9 @@ char *format_timestamp()
 }
 
 /**
- * Formats UTC timestamp in common log format.
+ * @brief Formats UTC timestamp in common log format.
+ * Example: 30/Nov/2021:00:10:02 +0000
+ * @return char* A string with the UTC timestamp in common log format
  */
 char *format_ts_common_log()
 {
@@ -59,7 +77,16 @@ char *format_ts_common_log()
   strftime(out, 64, "%d/%b/%Y:%H:%M:%S %z", utc);
   return out;
 }
-
+/**
+ * @brief Writes a log message to the log file.
+ * 
+ * @param level Log level
+ * @param file  
+ * @param line 
+ * @param func 
+ * @param format 
+ * @param ... 
+ */
 void __logger(int level, const char *file, int line, const char *func, const char *format, ...)
 {
   if (level < LEVEL)
@@ -91,16 +118,32 @@ void __logger(int level, const char *file, int line, const char *func, const cha
   }
 }
 
+/**
+ * @brief Verify the actual log level
+ * 
+ * @param level See enum log_level in log.c
+ * @return true if the level passed as parameter is equal or greater than the actual log level
+ */
 bool log_level_is_enabled(int level)
 {
   return level >= LEVEL;
 }
 
+/**
+ * @brief Sets the log level
+ * 
+ * @param level See enum log_level in log.c
+ */
 void log_set_level(int level)
 {
   LEVEL = level;
 }
 
+/**
+ * @brief Opens the log file
+ * 
+ * @param filename Path to the filename
+ */
 void log_set_file(char *filename)
 {
   LOG_FILE = fopen(filename, "a+");
@@ -111,6 +154,10 @@ void log_set_file(char *filename)
   }
 }
 
+/**
+ * @brief Closes the log file
+ * 
+ */
 void log_close_file()
 {
   fclose(LOG_FILE);

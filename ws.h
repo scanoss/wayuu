@@ -66,16 +66,24 @@ extern const char *ALLOWED_HTTP_METHODS[];
 
 #define MAX_SESSION 64
 
+
+/**
+ * @brief Used to create a queue.
+ */
 typedef struct ws_queue
 {
-  int capacity;
-  int size;
-  int front;
-  int rear;
-  int *elements;
+  int capacity; /**< Maximum number of elements in the queue. */
+  int size;  /**< Quantity of elements in the queue */
+  int front; /**< Index of the first element in the queue */
+  int rear; /**< Index of the last element in the queue */
+  int *elements; /**< Pointer to array of elements in the queue */
 } ws_queue;
-  
+
+/**
+ * @brief Keeps information about the current live connections.
+ */
 connections *live_connections;
+
 path_limits *limits;
 
 // WS HOOKS

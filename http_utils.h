@@ -103,26 +103,26 @@ typedef struct
 } header_t;
 
 /**
- *  api_request: encapsulates all that's needed to handle a particular request
+ *  @brief Encapsulates all that is needed to handle a particular client request
  */
 typedef struct api_request
 {
   SSL *ssl;
-  int socket;
-  int n_headers;                      // Number of HTTP Headers
-  header_t headers[HTTP_MAX_HEADERS]; // The HTTP Headers
-  char *content_type;                 // The HTTP Content-Type
-  char *form;                         // Contains the request body in the case of a POST request, or the form contents.
-  char *method;                       // The HTTP Method
-  char *url;                          // The Request URL (e.g. /user/list?filter=john&sort=desc&...)
-  char *path;                         // The Request Path (e.g. /user/list)
+  int socket;                         /**< Socket file descriptor */
+  int n_headers;                      /**< Number of HTTP Headers */
+  header_t headers[HTTP_MAX_HEADERS]; /**< The HTTP Headers */
+  char *content_type;                 /**< The HTTP Content-Type */
+  char *form;                         /**< Contains the request body in the case of a POST request, or the form contents. */ 
+  char *method;                       /**< The HTTP Method */
+  char *url;                          /**< The Request URL (e.g. /user/list?filter=john&sort=desc&...) */
+  char *path;                         /**< The Request Path (e.g. /user/list) */
   char *query_string;
-  char *IP;
+  char *IP;                           
   char *username;
   char *session;
-  char *request_line;       // The full request line (e.g. GET /index.html HTTP/1.1)
-  uint64_t request_start;   // Start time in epoch milliseconds
-  uint32_t response_length; // Length in bytes of the response
+  char *request_line;       /**< The full request line (e.g. GET /index.html HTTP/1.1) */
+  uint64_t request_start;   /**< Start time in epoch milliseconds */
+  uint32_t response_length; /**< Length in bytes of the response */
 } api_request;
 
 
@@ -136,13 +136,23 @@ typedef struct connections
 } connections;
 
 
-/* Stores API limits by path */
+/**
+ * @brief Stores API limits by path
+ * 
+ * The limits struct encapsulates a limit for a particular path.
+ * path, max connections, max connections per IP, max execution seconds
+ * 
+ * Example: /api, 20, 2, 10 
+ * Access to /api will be limited to a maximum of 20 simultaneous connections
+ * and no more than 2 from the same IP. Connections will be dropped if alive 
+ * for more than 10 seconds
+ * */
 typedef struct path_limits
 {
-	char path[HTTP_MAX_PATH];
-	int max_connections;
-	int max_connections_per_ip;
-	int max_seconds;
+	char path[HTTP_MAX_PATH]; /** < The path to resource that will be limited */
+	int max_connections; /** < Maximum number of connections allowed for this particular path */
+	int max_connections_per_ip; /** < Maximum number of connections from the same IP allowed for this particular path */
+	int max_seconds; /** < Maximum number of seconds a connection can be alive for this particular path */
 } path_limits;
 
 /**
@@ -191,8 +201,8 @@ void send_http_status(api_request *req, int status, char *message);
 // URL Parsing helpers
 typedef struct path_and_query_t
 {
-  char *path;
-  char *query;
+  char *path; /**< The path part of the URL */
+  char *query; /**< The query part of the URL */
 } path_and_query_t;
 
 path_and_query_t *get_path_and_query_string(char *url);

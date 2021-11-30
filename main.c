@@ -16,6 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+
+/**
+  * @file main.c
+  * @date 17 Jul 2021 
+  * @brief Main file for the wayuu project and launch the service
+  */
+
 #ifdef WAYUU_DIST
 #include <signal.h>
 #include <string.h>

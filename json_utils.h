@@ -28,16 +28,19 @@
 #include <stdint.h>
 
 /**
- * json_type_serializer: Function that knows how to serialize a particular entity. Must be implemented by all the
+ * @brief Function that knows how to serialize a particular entity. Must be implemented by all the
  * entities.
  */
 typedef char *(*json_type_serializer)(void *object);
 
+/**
+ * @brief Struct that represents a JSON object and has a serializer function.
+ */
 typedef struct json_list_t
 {
-  int size;
-  json_type_serializer serializer;
-  void **elements;
+  int size; /**< Size of the list */
+  json_type_serializer serializer; /**< Function that knows how to serialize a particular entity. */
+  void **elements; /**< Array of pointers to the elements of the list */
 } json_list_t;
 
 /**

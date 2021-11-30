@@ -15,6 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+/**
+  * @file ws.c
+  * @date 17 Jul 2021
+  * @brief Implements the main function to run the wayuu web server.
+  */
 #include "ws.h"
 #include <arpa/inet.h>
 #include <ctype.h>
@@ -33,9 +39,22 @@
 #include <netinet/in.h>
 
 /* Globals */
+
+/**
+ * @brief Mutex used to access the socket queue
+ */
 pthread_mutex_t ws_mutex;
+
 pthread_cond_t ws_cond;
+
+/**
+ * @brief Stores sockets connections that will be processed by a thread
+ */
 ws_queue *ws_threads_queue;
+
+/**
+ * @brief A structure containing TLS/SSL session details for a connection
+ */
 SSL_CTX *ctx;
 
 char WAYUU_WS_ROOT[ROOT_PATH_MAX];
@@ -50,21 +69,40 @@ char WAYUU_WS_LIMITS[ROOT_PATH_MAX + 32];
 
 const char *COOKIE_HEADERS[] = {"X-Session:", "Authorization:", ""};
 
-// LIST OF ALLOWED HTTP METHODS. Last element must be NULL so that startswithany can work.
+/**
+ * @brief  LIST OF ALLOWED HTTP METHODS. 
+ * Last element must be NULL so that startswithany function can work.
+ */
 const char *ALLOWED_HTTP_METHODS[] = {"GET", "POST", "PUT", "DELETE", NULL};
 
-//http layer 
+
+/**
+ * @brief Processes a HTTP request
+ * @param socket Accepted client socket
+ */
 void accept_request(int socket);
-//process socket as http by default
+
+/**
+ * @brief Process socket as http by default
+ */
 ws_socket_handler socket_handler = &accept_request;
 
-
+/**
+ * @brief Terminates the program
+ */
 void wayuu_failed()
 {
 	printf("Service failed. Please check %s for details\n", WAYUU_LOGFILE);
 	exit(EXIT_FAILURE);
 }
 
+
+/**
+ * @brief Verify if a client IP is allowed to access the webserver
+ * 
+ * @param ip string containing the client IP. Example: "aaa.bbb.ccc.ddd"
+ * @return true if the IP is accepted, false otherwise 
+ */
 bool allowed_address(char *ip)
 {
 	if (strlen(WAYUU_WS_ALLOW) == 0)
@@ -85,6 +123,14 @@ bool allowed_address(char *ip)
 	return find_in_file(WAYUU_WS_ALLOW, ip);
 }
 
+/**
+ * @brief Reads/extracts a line from the client request.
+ * 
+ * @param req Struct that contains the client and socket information
+ * @param buf Destination buffer
+ * @param size Maximum size of the buffer
+ * @return int The number of bytes written in the buffer
+ */
 int get_line(api_request *req, char *buf, int size)
 {
 
@@ -111,17 +157,27 @@ int get_line(api_request *req, char *buf, int size)
 	return (i);
 }
 
+/**
+ * @brief Initialize openssl library
+ */
 void init_openssl()
 {
 	SSL_load_error_strings();
 	OpenSSL_add_ssl_algorithms();
 }
 
+/**
+ * @brief Clean up openssl library
+ */
 void cleanup_openssl()
 {
 	EVP_cleanup();
 }
 
+/**
+ * @brief Creates a new SSL_CTX object as framework to establish TLS/SSL connection
+ * @return SSL_CTX* A structure containing TLS/SSL session details for a connection
+ */
 SSL_CTX *create_context()
 {
 	const SSL_METHOD *method;
@@ -139,6 +195,12 @@ SSL_CTX *create_context()
 	return ctx;
 }
 
+/**
+ * @brief Configure the SSL_CTX object. 
+ * Reads certificates and keys from the filesystem and sets to the SSL_CTX object
+ * 
+ * @param ctx A structure containing TLS/SSL session details for a connection
+ */
 void configure_context(SSL_CTX *ctx)
 {
 	SSL_CTX_set_ecdh_auto(ctx, 1);
@@ -160,6 +222,17 @@ void configure_context(SSL_CTX *ctx)
 	}
 }
 
+/**
+ * @brief Handles parsing each of the parts of a multipart POST
+ * 
+ * As a multipart document format, it consists of different parts, delimited by a boundary string.
+ * It reads one data part from the POST (tmpdata) and stores it in tmpfields 
+ * 
+ * @param IP IP address of the client. In string format
+ * @param tmpfields Pointer to char that will store the multipart POST data. If data already exist will be appended
+ * @param tmpdata One part of the multipart POST data
+ * @param length Length of one of the multipart POST data
+ */
 void part_parse(char *IP, char *tmpfields, char *tmpdata, long length)
 {
 
@@ -207,9 +280,20 @@ void part_parse(char *IP, char *tmpfields, char *tmpdata, long length)
 	}
 }
 
-// TODO: Make this work for multiple file downloads
+
+
 /**
- * save_tmp_file: Saves a file into FILE_DOWNLOAD_TMP_DIR, and stores the file name in tmpfields as well as the original filename
+ * @brief Saves a file into FILE_DOWNLOAD_TMP_DIR, 
+ * and stores the file name in tmpfields as well as the original filename
+ * 
+ * TODO: Make this work for multiple file downloads
+ * 
+ * @param tmpfields 
+ * @param field 
+ * @param start_file 
+ * @param tmpdata 
+ * @param data_start 
+ * @param actuallength 
  */
 void save_tmp_file(char *tmpfields, char *field, long start_file, char *tmpdata, long data_start, long actuallength)
 {
@@ -238,6 +322,17 @@ void save_tmp_file(char *tmpfields, char *field, long start_file, char *tmpdata,
 	sprintf(tmpfields + strlen(tmpfields), "%s=%s&tmpfile=%s", field, orig_filename, tmpfile);
 }
 
+/**
+ * @brief Parse multipart data and insert into req->form 
+ * 
+ * As a multipart document format, it consists of different parts, delimited by a boundary string.
+ * It extracts all the parts from the POST request (req->form) and stores it again formatter in req->form
+ * 
+ * @param form Body part of the client request
+ * @param IP Client IP, in form of "aaa.bbb.ccc.ddd"
+ * @param multipart_boundary Boundary for multipart data. See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types#multipartform-data
+ * @param content_length Length in bytes of the body part
+ */
 void multipart_parse(char *form, char *IP, char *multipart_boundary, long content_length)
 {
 
@@ -250,7 +345,7 @@ void multipart_parse(char *form, char *IP, char *multipart_boundary, long conten
 
 	while (ptr < content_length)
 	{
-
+		/** search for multipart boundary start and end */
 		part_start = text_find_after(form, multipart_boundary, ptr, content_length);
 		if (part_start < 0)
 			break;
@@ -273,6 +368,14 @@ void multipart_parse(char *form, char *IP, char *multipart_boundary, long conten
 	free(tmppart);
 }
 
+/**
+ * @brief Handle an API request. (To enter here the path must contain /api....) 
+ * This function is executed in separate thread for each client request
+ * 
+ * @param req Encapsulates all that is needed to handle a particular client request
+ * @param content_length Indicates the size of the message body, in bytes.
+ * @param multipart_boundary Boundary for Multipart Content-Type. See https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html
+ */
 void handle_api_request(api_request *req, long content_length, char *multipart_boundary)
 {
 
@@ -307,6 +410,14 @@ void handle_api_request(api_request *req, long content_length, char *multipart_b
 	router_handle_request(req);
 }
 
+/**
+ * @brief Handle any static request. 
+ * If the url path does not contain /api, then it is a static request. 
+ * 
+ * If the resource requested is not found, will return to the client index.html
+ * 
+ * @param req  Encapsulates all that is needed to handle a particular client request
+ */
 void handle_static_routes(api_request *req)
 {
 	log_debug("Handle static route: %s", req->path);
@@ -346,6 +457,13 @@ void handle_static_routes(api_request *req)
 	}
 }
 
+
+/**
+ *  @brief It behaves like a constructor for a api_request struct.
+ * 	This struct is used to store the request data and also used to interact with the client.
+ * 
+ *  @param socket Socket to the client.
+ */
 api_request *api_request_new(int socket)
 {
 	api_request *req = calloc(1, sizeof(api_request));
@@ -361,7 +479,14 @@ api_request *api_request_new(int socket)
 	return req;
 }
 
-/* Return "total" / "by_ip" ongoing connections "path" and "IP" */
+/**
+ * @brief Gets the number of ongoing connections for an specific path and IP
+ * 
+ * @param path path to the resource.
+ * @param IP client IP address.
+ * @param total total number of connections at specific time [out]
+ * @param by_ip total number of connections by IP address at specific time [out]
+ */
 void get_live_stats(char *path, char *IP, int *total, int *by_ip)
 {
 	for (int i = 0; i < WS_MAX_CONNECTIONS; i++)
@@ -378,12 +503,18 @@ void get_live_stats(char *path, char *IP, int *total, int *by_ip)
 	}
 }
 
-/* Validates if socket/IP/path is to be allowed */
+/**
+ * @brief Validates if a pair IP/path is to be allowed to access the API.
+ * 
+ * @param IP String to the client IP
+ * @param path path to the resource that will be validated
+ * @return true if the IP is allowed to access the API, false otherwise.
+ */
 bool connection_validate(char *IP, char *path)
 {
 	for (int i = 0; i < MAX_LIMIT_RULES; i++)
 	{
-		if (!*limits[i].path)
+		if (!*limits[i].path)	// End of list
 			break;
 		if (startswith(path, limits[i].path))
 		{
@@ -405,6 +536,11 @@ bool connection_validate(char *IP, char *path)
 	return true;
 }
 
+/**
+ * @brief Close the socket and removes the request from the live_connections array.
+ * 
+ * @param req 
+ */
 void connection_close(api_request *req)
 {
 	if (WAYUU_SSL_ON)
@@ -416,7 +552,11 @@ void connection_close(api_request *req)
 	connection_del(req->socket);
 }
 
-/* Removes socket from live_connections */
+/**
+ * @brief Removes socket from live_connections
+ * 
+ * @param socket 
+ */
 void connection_del(int socket)
 {
 	for (int i = 0; i < WS_MAX_CONNECTIONS; i++)
@@ -431,7 +571,16 @@ void connection_del(int socket)
 	}
 }
 
-/* Adds socket to live_connections (if allowed) */
+
+/**
+ *  @brief Adds a new socket to the live_connections array (if allowed).
+ * 	This array is used to keep track of all the connections.
+ * 
+ * 
+ *  @param socket Socket to the client.
+ *  @param path URL requested.
+ *  @param IP IP of the client.
+ */
 bool connection_add(int socket, char *IP, char *path)
 {
 	if (!connection_validate(IP, path))
@@ -453,9 +602,13 @@ bool connection_add(int socket, char *IP, char *path)
 }
 
 /**
- * accept_request: Main request handling routine. It performs initial parsing of structures,
- * generates api_request structure
+ * @brief Main request handling routine 
+ * This function is executed in an independent thread for each client request.
+ * 
+ * It performs initial parsing of structures, generates api_request structure
  * and delegates request to static handler or api handler depending on mount points. 
+ * 
+ * @param socket socket descriptor 
  */
 void accept_request(int socket)
 {
@@ -467,13 +620,14 @@ void accept_request(int socket)
 	size_t i, j;
 	api_request *req = api_request_new(socket);
 
-	// IP
+	// Loads IP address of the client into the api_request struct
 	req->IP = calloc(24, 1);
 	struct sockaddr_in addr;
 	socklen_t addr_len = sizeof(addr);
 	getpeername(socket, (struct sockaddr *)&addr, &addr_len);
 	strcpy(req->IP, inet_ntoa(addr.sin_addr));
 	SSL *ssl;
+	
 	// SSL
 	if (WAYUU_SSL_ON)
 	{
@@ -489,14 +643,17 @@ void accept_request(int socket)
 	}
 
 	/* Read header start */
-	numchars = get_line(req, buf, sizeof(buf));
+	//https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages
+	numchars = get_line(req, buf, sizeof(buf)); 
+
 	log_trace("IP: %s, Request: %s", req->IP, buf);
 
-	req->request_line = strdup(buf);
+	// Allocate new memory and copy the request line to req->request_line
+	req->request_line = strdup(buf); 
 	// The request line ends in the two characters \r\n
 	req->request_line[strlen(req->request_line) - 2] = 0;
 
-	// HTTP METHOD
+	// Extract the method from the request line and copy it to req->method
 	i = 0;
 	j = 0;
 	while (!isspace((int)(buf[j])) && (i < sizeof(method) - 1))
@@ -518,7 +675,7 @@ void accept_request(int socket)
 		return;
 	}
 
-// Parse URL
+	// Parse URL
 	i = 0;
 	while (isspace((int)(buf[j])) && (j < sizeof(buf)))
 	{
@@ -534,6 +691,7 @@ void accept_request(int socket)
 
 	url[i] = '\0';
 
+    //Extract the URL from the request line and copy it to req->url
 	req->url = strdup(url);
 
 	/* Validate and add connection to live_connections */
@@ -551,7 +709,7 @@ void accept_request(int socket)
 	numchars = 1;
 	buf[0] = 'A';
 	buf[1] = '\0';
-	numchars = get_line(req, buf, sizeof(buf));
+	numchars = get_line(req, buf, sizeof(buf)); // Extracts a line from the client request
 	req->session = calloc(MAX_SESSION, 1);
 	int headers_idx = 0;
 	while ((numchars > 0) && strcmp("\n", buf) && strcmp("\r\n", buf))
@@ -652,6 +810,12 @@ void accept_request(int socket)
 	free(req);
 }
 
+/**
+ * @brief Creates a fixed size (static) queue of ints elements
+ * 
+ * @param maxElements Capacity of the queue
+ * @return pointer to the queue 
+ */
 ws_queue *ws_create_queue(int maxElements)
 {
 
@@ -665,6 +829,12 @@ ws_queue *ws_create_queue(int maxElements)
 	return queue;
 }
 
+
+/**
+ * @brief Gets an element from the queue. Thread safe
+ * 
+ * @return int Element from the queue
+ */
 int ws_queue_get()
 {
 
@@ -689,6 +859,15 @@ int ws_queue_get()
 	return val;
 }
 
+
+/**
+ * @brief This function is used as a callback thread to handle a new client request
+ * When a new connection is initiated, a new thread is unlocked and processes the request
+ * The final function that will process the request is socket_handler(socket).
+ * 
+ * 
+ * @return void* 
+ */
 static void *ws_connection_handler()
 {
 	int socket = 0;
@@ -701,6 +880,17 @@ static void *ws_connection_handler()
 	return NULL;
 }
 
+/**
+ * @brief This function launches and keeps the Wayuu service running.
+ * In a nutshell: Creates a pool of threads to handle each client request independently.
+ * 
+ * It creates a tmp directory if not exist, initialize ssl context, 
+ * creates a queue to handle accepted socket connections and handle them independently in a thread.
+ * 
+ * @param port Binds Wayuu service in the port given
+ * @param bind_addr Binds Wayuu service in the IP given
+ * @param handler External socket handler for accepted connections. Optional, is defined locally in this file
+ */
 void ws_launch(int port, char *bind_addr, ws_socket_handler handler)
 {
 
@@ -729,7 +919,7 @@ void ws_launch(int port, char *bind_addr, ws_socket_handler handler)
 	limits = load_limits();
 	/* Start service */
 	ws_threads_queue = ws_create_queue(WS_MAX_CONNECTIONS);
-	pthread_mutex_init(&ws_mutex, NULL);
+	pthread_mutex_init(&ws_mutex, NULL);	//ws_mutex is a global variable
 	pthread_t threadPool[WS_THREAD_POOL_SIZE];
 
 	int httpd = 0;
@@ -813,20 +1003,18 @@ void ws_launch(int port, char *bind_addr, ws_socket_handler handler)
 	cleanup_openssl();
 }
 
-/* 
-
-	load_limits: Loads the limits configuration file.
-  
-	The limits configuration file contains a list of comma delimited limits with:
-	path, max connections, max connections per IP, max execution seconds
-
-  Example:
-  /api, 20, 2, 10
-
-  Access to /api will be limited to a maximum of 20 simultaneous connections
-  and no more than 2 from the same IP. Connections will be dropped if alive
-  for more than 10 seconds
-*/
+/**
+ * @brief Loads the limits configuration file.
+ * The limits configuration file contains a list of comma delimited limits with:
+ * path, max connections, max connections per IP, max execution seconds
+ * 
+ * Example: /api, 20, 2, 10 
+ * Access to /api will be limited to a maximum of 20 simultaneous connections
+ * and no more than 2 from the same IP. Connections will be dropped if alive 
+ * for more than 10 seconds
+ * 
+ * @return limits_t* 
+ */
 path_limits *load_limits()
 {
 	sprintf(WAYUU_WS_LIMITS, "%s/etc/limits", WAYUU_WS_ROOT);

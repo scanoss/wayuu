@@ -15,23 +15,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 /**
- *  conf_parser.c - functions to parse and write CONF files
- */
+  * @file conf_parser.c
+  * @date 11 Jul 2020 
+  * @brief Contains functions to parse and write CONF files
+  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "string_utils.h"
 #include "conf_parser.h"
 
-/*
- * DELIM is the delimiter that separates keys and values in a conf file. 
+/**
+ * @brief Separates keys and values in a conf file. 
  */
 const char DELIM[] = "=";
+
+
 const char MULTI_DELIM[] = ",";
 
-/*
- * conf_parse_multi: Parses comma separated strings into array of values.
+/**
+ * @brief Parses comma separated strings into array of values
+ * @param item The string to parse
  */
 void conf_parse_multi(conf_item *item)
 {
@@ -60,12 +67,13 @@ void conf_parse_multi(conf_item *item)
   free(value);
 }
 
-/*
- * conf_parse_first_pass - parses a line and returns a conf_item. 
+/**
+ * @brief Parses a line of a configuration file and returns a conf_item.
  * It doesn't handle multivalues.
  * 
+ * @param line: The line to parse.
+ * @return conf_item*
  */
-
 conf_item *conf_parse_first_pass(char *line)
 {
   if (!strstr(line, "="))
@@ -195,8 +203,10 @@ conf_item *new_conf_item_with_values(char *key, char *value, char *multivalue[],
   return item;
 }
 
-/*
- * free_conf_item: frees memory allocated to a conf_item struct.
+/**
+ * @brief frees memory allocated to a conf_item struct.
+ * 
+ * @param item 
  */
 void free_conf_item(conf_item *item)
 {
