@@ -11,3 +11,4 @@ test-wayuu
 *.o
 *.so
 .vagrant/
+doc
