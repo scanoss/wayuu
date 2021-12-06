@@ -299,7 +299,7 @@ int return_json_headers(api_request *req, int status)
 	}
 	char buf[1024];
 
-	sprintf(buf, "%s%s%s", HTTP_ERROR_STARTS[error_index], WAYUU_HTTP_SERVER_STRING, CONTENT_TYPE_JSON);
+	sprintf(buf, "%s%s%s%s", HTTP_ERROR_STARTS[error_index], WAYUU_HTTP_SERVER_STRING, HTTP_ACCESS_CONTROL, CONTENT_TYPE_JSON);
 	http_print(req, buf, strlen(buf));
 	return strlen(buf);
 }
@@ -313,7 +313,7 @@ int return_headers_with_mime(api_request *req, int status, char *mime)
 	}
 	char buf[1024];
 
-	sprintf(buf, "%s%s%s", HTTP_ERROR_STARTS[error_index], WAYUU_HTTP_SERVER_STRING, get_content_type_for_mime(mime));
+	sprintf(buf, "%s%s%s%s", HTTP_ERROR_STARTS[error_index], WAYUU_HTTP_SERVER_STRING, HTTP_ACCESS_CONTROL, get_content_type_for_mime(mime));
 	http_print(req, buf, strlen(buf));
 	return strlen(buf);
 }

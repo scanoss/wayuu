@@ -59,6 +59,8 @@
 #define CONTENT_TYPE_YAML "Content-Type: text/yaml\r\n"
 #define CONTENT_TYPE_OCTET_STREAM "Content-Type: application/octet-stream\r\n"
 
+#define HTTP_ACCESS_CONTROL "Access-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, DELETE, PUT\r\nAccess-Control-Allow-Headers: Content-Type\r\n"
+
 #define HTTP_MAX_ERROR_CODE_LEN 64
 #define HTTP_MAX_ERROR_MSG_LEN 1024
 
