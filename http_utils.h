@@ -29,7 +29,7 @@
 #include "json_utils.h"
 
 // HTTP protocol start strings
-g
+
 #define CRLF "\r\n"
 #define HTTP_VERSION "HTTP/1.1"
 #define WAYUU_WS_VERSION "1.4.8"
