@@ -37,6 +37,8 @@ pthread_mutex_t ws_mutex;
 pthread_cond_t ws_cond;
 ws_queue *ws_threads_queue;
 SSL_CTX *ctx;
+connections *live_connections;
+path_limits *limits;
 
 char WAYUU_WS_ROOT[ROOT_PATH_MAX];
 char FAVICON_URL[ROOT_PATH_MAX];

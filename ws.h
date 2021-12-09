@@ -75,8 +75,8 @@ typedef struct ws_queue
   int *elements;
 } ws_queue;
   
-connections *live_connections;
-path_limits *limits;
+extern connections *live_connections;
+extern path_limits *limits;
 
 // WS HOOKS
 
