@@ -118,7 +118,7 @@ void write_file(char *filename, char *ptr, int size)
     return;
   }
   size_t written = fwrite(ptr, 1, size, f);
-  if (written < 1)
+  if (written < 0)
   {
     log_error("There was an error writing file: %s", filename);
   }
