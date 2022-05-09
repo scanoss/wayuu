@@ -227,9 +227,7 @@ int send_stream(api_request *req, FILE *fp)
 		len += s;
 		http_print(req, buf,s);
 	}
-	sprintf(buf, "\r\n");
-	http_print(req, buf, strlen(buf));
-	len += strlen(buf);
+
 	return len;
 }
 
