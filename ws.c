@@ -31,6 +31,9 @@
 #include "router.h"
 #include <openssl/ssl.h>
 #include <netinet/in.h>
+#include <signal.h>
+#include <sys/wait.h>
+#include <sys/types.h>
 
 /* Globals */
 pthread_mutex_t ws_mutex;
@@ -233,7 +236,7 @@ void save_tmp_file(char *tmpfields, char *field, long start_file, char *tmpdata,
 	}
 	char tmpfilepath[strlen(FILE_DOWNLOAD_TMP_DIR) + 264];
 	md5sum(md5, tmpdata + data_start, actuallength - data_start - 2);
-	sprintf(tmpfile, "%lu-%s", pthread_self(), md5);
+	sprintf(tmpfile, "%d-%lu-%s", getpid(),pthread_self(), md5);
 	sprintf(tmpfilepath, "%s/%s", FILE_DOWNLOAD_TMP_DIR, tmpfile);
 
 	write_file(tmpfilepath, tmpdata + data_start, actuallength - data_start - 2);
@@ -703,6 +706,11 @@ static void *ws_connection_handler()
 	return NULL;
 }
 
+void catch_sigchild(int sig)
+{
+     wait(NULL);
+}
+
 void ws_launch(int port, char *bind_addr, ws_socket_handler handler)
 {
 
@@ -711,6 +719,7 @@ void ws_launch(int port, char *bind_addr, ws_socket_handler handler)
 	struct sockaddr_in client_name;
 	uint32_t client_name_len = sizeof(client_name);
 
+	signal(SIGCHLD,catch_sigchild);
 	// Create TMP dir
 	if (!check_createdir(FILE_DOWNLOAD_TMP_DIR))
 	{
@@ -769,43 +778,56 @@ void ws_launch(int port, char *bind_addr, ws_socket_handler handler)
 
 	log_info("WAYUU WS %s running on port %d", WAYUU_WS_VERSION, port);
 
-	while (true)
+	
+	pid_t pid =-1;
+	for(int i=0; i<WS_PROCESS_SIZE; i++)
 	{
-
-		client_sock = accept(httpd, (struct sockaddr *)&client_name, &client_name_len);
-		if (client_sock == -1)
-			log_fatal("Error while creating client socket");
-
-		char *IP = malloc(16);
-		strcpy(IP, inet_ntoa(client_name.sin_addr));
-
-		if (!allowed_address(IP))
+		if ( (pid = fork()) < 0)  
+	        exit(-1);  
+	  else if (pid == 0) 
+	  {  
+	  	for (int i = 0; i < WS_THREAD_POOL_SIZE; i++)
+			pthread_create(&threadPool[i], NULL, ws_connection_handler, (void *)NULL);
+		while (true)
 		{
-			log_debug("IP:%s Access denied", IP);
-			close(client_sock);
-		}
-		else
-		{
+			client_sock = accept(httpd, (struct sockaddr *)&client_name, &client_name_len);
+			if (client_sock == -1)
+				log_fatal("Error while creating client socket");
 
-			// Add to queue
-			pthread_mutex_lock(&ws_mutex);
-			if (ws_threads_queue->size != ws_threads_queue->capacity)
+			char *IP = malloc(16);
+			strcpy(IP, inet_ntoa(client_name.sin_addr));
+
+			if (!allowed_address(IP))
 			{
-				ws_threads_queue->size++;
-				ws_threads_queue->rear = ws_threads_queue->rear + 1;
-				if (ws_threads_queue->rear == ws_threads_queue->capacity)
-					ws_threads_queue->rear = 0;
-				ws_threads_queue->elements[ws_threads_queue->rear] = client_sock;
+				log_debug("IP:%s Access denied", IP);
+				close(client_sock);
 			}
 			else
 			{
-				log_warn("IP:%s Connection dropped. No threads available", IP);
+				// Add to queue
+				pthread_mutex_lock(&ws_mutex);
+				if (ws_threads_queue->size != ws_threads_queue->capacity)
+				{
+					ws_threads_queue->size++;
+					ws_threads_queue->rear = ws_threads_queue->rear + 1;
+					if (ws_threads_queue->rear == ws_threads_queue->capacity)
+						ws_threads_queue->rear = 0;
+					ws_threads_queue->elements[ws_threads_queue->rear] = client_sock;
+				}
+				else
+				{
+					log_warn("IP:%s Connection dropped. No threads available", IP);
+				}
+				pthread_mutex_unlock(&ws_mutex);
+				pthread_cond_signal(&ws_cond);
 			}
-			pthread_mutex_unlock(&ws_mutex);
-			pthread_cond_signal(&ws_cond);
 		}
+	  }
 	}
 
+	while(1)
+		pause();
+	
 	log_info("WAYUU WS shutting down");
 	close(server_sock);
 	if (WAYUU_SSL_ON)
