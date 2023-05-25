@@ -481,7 +481,7 @@ void free_path_and_query_t(path_and_query_t *p)
 
 char *wayuu_error_t_json_serializer(wayuu_error_t *error)
 {
-	if (error->code == NULL || strlen(error->code) == 0)
+	if (strlen(error->code) == 0)
 	{
 		strcpy(error->code, "UNKNOWN");
 	}
@@ -545,9 +545,9 @@ char *return_response(call_response_t rsp)
 		asprintf(&aux_err, "\"RSP\":\"ERROR\"");
 	if (rsp.status == 2)
 		asprintf(&aux_err, "\"RSP\":\"WARNING\"");
-	if (rsp.text)
+	if (strlen(rsp.text))
 		asprintf(&aux_txt, ", \"info\":\"%s\"", rsp.text);
-	if (rsp.description)
+	if (strlen(rsp.description))
 		asprintf(&aux_description, ", \"description\":\"%s\"", rsp.description);
 
 	if (rsp.additional_info != NULL)
