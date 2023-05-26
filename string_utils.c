@@ -17,7 +17,7 @@
  */
 
 #include <stdint.h>
-#include <openssl/md5.h>
+#include <openssl/evp.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -93,32 +93,40 @@ char *ltrim(const char *str, char sep)
 
 void md5sum(char *out, char *data, int len)
 {
-
   int i;
-  MD5_CTX c;
-  unsigned char digest[16];
+  EVP_MD_CTX *mdctx;
+  const EVP_MD *md;
+  unsigned char digest[EVP_MAX_MD_SIZE];
   char *md5;
-  md5 = malloc(33);
+  md5 = malloc(EVP_MAX_MD_SIZE * 2 + 1);
   md5[0] = 0;
-  MD5_Init(&c);
+  
+  mdctx = EVP_MD_CTX_new();
+  md = EVP_md5();
+  EVP_DigestInit_ex(mdctx, md, NULL);
+  
   while (len > 0)
   {
     if (len > 512)
     {
-      MD5_Update(&c, data, 512);
+      EVP_DigestUpdate(mdctx, data, 512);
     }
     else
     {
-      MD5_Update(&c, data, len);
+      EVP_DigestUpdate(mdctx, data, len);
     }
     data += 512;
     len -= 512;
   }
-  MD5_Final(digest, &c);
-  for (i = 0; i < 16; ++i)
-    snprintf(&(md5[i * 2]), 32, "%02x", (unsigned int)digest[i]);
-  memcpy(out, md5, 32);
-  out[32] = 0;
+  
+  EVP_DigestFinal_ex(mdctx, digest, NULL);
+  EVP_MD_CTX_free(mdctx);
+  
+  for (i = 0; i < EVP_MD_size(md); ++i)
+    snprintf(&(md5[i * 2]), EVP_MAX_MD_SIZE * 2 + 1, "%02x", (unsigned int)digest[i]);
+  
+  memcpy(out, md5, EVP_MAX_MD_SIZE * 2);
+  out[EVP_MAX_MD_SIZE * 2] = 0;
   free(md5);
 }
 
