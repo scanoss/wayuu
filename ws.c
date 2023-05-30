@@ -223,7 +223,7 @@ void save_tmp_file(char *tmpfields, char *field, long start_file, char *tmpdata,
 	chop_string(orig_filename);
 	log_debug("Original filename %s\n", orig_filename);
 
-	char md5[36];
+	
 	char tmpfile[256];
 	// Make sure FILE_DOWNLOAD_TMP_DIR exists
 	if (!is_dir(FILE_DOWNLOAD_TMP_DIR))
@@ -232,6 +232,7 @@ void save_tmp_file(char *tmpfields, char *field, long start_file, char *tmpdata,
 		check_createdir(FILE_DOWNLOAD_TMP_DIR);
 	}
 	char tmpfilepath[strlen(FILE_DOWNLOAD_TMP_DIR) + 264];
+	char md5[36];
 	md5sum(md5, tmpdata + data_start, actuallength - data_start - 2);
 	sprintf(tmpfile, "%lu-%s", pthread_self(), md5);
 	sprintf(tmpfilepath, "%s/%s", FILE_DOWNLOAD_TMP_DIR, tmpfile);
