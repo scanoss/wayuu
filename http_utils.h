@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
- * Copyright (C) 2018-2020 SCANOSS LTD
+ * Copyright (C) 2018-2023 SCANOSS LTD
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 
 #define CRLF "\r\n"
 #define HTTP_VERSION "HTTP/1.1"
-#define WAYUU_WS_VERSION "1.4.9"
+#define WAYUU_WS_VERSION "1.5.0"
 #define WAYUU_HTTP_SERVER_STRING "Server: WAYUU/" WAYUU_WS_VERSION CRLF
 // HTTP STATUS STRINGS. 
 #define HTTP_OK_START HTTP_VERSION " 200 OK\r\n"
