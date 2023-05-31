@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
- * Copyright (C) 2018-2020 SCANOSS LTD
+ * Copyright (C) 2018-2023 SCANOSS LTD
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include "../ws.h"
 #include "../http_utils.h"
 #include "test_mocks.h"
+#include "log.h"
 
 api_request *new_test_api_request(int socket, char *IP, char *url)
 {
@@ -157,8 +158,8 @@ describe(http_utils)
       api_request *req = new_test_api_request(0, "0.0.0.0", "");
       return_json(req, body);
       char *data_sent = get_sent_data();
-      char *expected_str = malloc(1024);
-      sprintf(expected_str, "%s%s%s%s\r\n%s\r\n", HTTP_OK_START, WAYUU_HTTP_SERVER_STRING, CONTENT_TYPE_JSON, "Content-Length: 20\r\n", body);
+      char *expected_str = malloc(2048);
+      sprintf(expected_str, "%s%s%s%s%s\r\n%s\r\n", HTTP_OK_START, WAYUU_HTTP_SERVER_STRING, HTTP_ACCESS_CONTROL,CONTENT_TYPE_JSON, "Content-Length: 20\r\n", body);
       asserteq(data_sent, expected_str);
       free(expected_str);
       free(data_sent);
@@ -177,11 +178,11 @@ describe(http_utils)
       api_request *req = new_test_api_request(0, "0.0.0.0", "");
       bad_request_with_error(req, error);
       char *data_sent = get_sent_data();
-      char *expected_str = malloc(256);
+      char *expected_str = malloc(1024);
       char *error_json = "{\"code\":\"TEST_CODE\",\"message\":\"This is a test message\"}";
       char content_length[128];
       sprintf(content_length, "Content-Length: %lu\r\n", strlen(error_json) + 2);
-      sprintf(expected_str, "%s%s%s%s\r\n%s\r\n", HTTP_BAD_REQUEST_START, WAYUU_HTTP_SERVER_STRING, CONTENT_TYPE_JSON, content_length, error_json);
+      sprintf(expected_str, "%s%s%s%s%s\r\n%s\r\n", HTTP_BAD_REQUEST_START, WAYUU_HTTP_SERVER_STRING, HTTP_ACCESS_CONTROL,CONTENT_TYPE_JSON, content_length, error_json);
       asserteq(data_sent, expected_str);
       free(error);
       free(data_sent);
