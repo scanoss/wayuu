@@ -35,6 +35,10 @@
 // Maximum amount of connections held in the WS queue
 #define WS_MAX_CONNECTIONS 1024
 
+// WS Number of processes
+#define WS_PROCESS_SIZE 10
+
+
 #define DEFAULT_PORT 4443
 // This is the default folder for configuration.
 #define DEFAULT_ROOT "/etc/wayuu"
